@@ -59,8 +59,10 @@ export function readWireviz(sources: string[], title: string): Harness {
     const columns: Item[][] = entries.map((e) => {
       if (typeof e === "string") return Array.from({ length: count }, () => item(e, 1));
       if (Array.isArray(e)) return e.map((d) => item(String(d), 1));
+      // One instance for the whole entry: `TWIN.: [1, 2]` is both cores of one new cable.
       const [designator, refs] = Object.entries(e as Yaml)[0];
-      return expand(refs).map((ref) => item(designator, ref));
+      const one = item(designator, 0);
+      return expand(refs).map((ref) => ({ ...one, ref }));
     });
     columns.forEach((col, i) => {
       if (i && (col[0].kind === "connector") === (columns[i - 1][0].kind === "connector")) {

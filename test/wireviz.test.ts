@@ -199,3 +199,14 @@ test("a duplicate key takes the last value, as PyYAML does", () => {
   const dup = `connectors:\n  X:\n    type: "one"\n    type: "two"\n    pinlabels: ["A"]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - X: [A]\n    - W: [1]\n`;
   assert.equal(readWireviz([dup], "x").connectors[0].type, "two");
 });
+
+test("a fresh instance is one per entry, however many wires the entry names", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\ncables:\n  TWIN:\n    wirecount: 2\nconnections:\n  -\n    - A: [X, Y]\n    - TWIN.: [1, 2]\n  -\n    - A: [X]\n    - TWIN.: [1]\n`;
+  const twins = readWireviz([src], "x").cables.map((c) => c.id);
+  assert.deepEqual(twins, ["__TWIN_1", "__TWIN_2"]);
+});
+
+test("a bare fresh name repeated down a set is a new instance on every row, as in the fork", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\n  B:\n    pincount: 1\ncables:\n  ONE:\n    wirecount: 1\nconnections:\n  -\n    - A: [X, Y]\n    - ONE.: [1, 1]\n    - B.\n`;
+  assert.deepEqual(readWireviz([src], "x").connectors.map((c) => c.id), ["A", "__B_1", "__B_2"]);
+});
