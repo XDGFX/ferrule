@@ -53,7 +53,7 @@ test("flattening leaves no CSS variable for a rasteriser to miss", async () => {
   }
 });
 
-test("a mated pair is laid out side by side, so a wrap can't separate them", async () => {
+test("a mated pair is laid out side by side, joined by a short mate", async () => {
   const src = `connectors:\n  P:\n    pinlabels: ["A", "B"]\n  S:\n    pinlabels: ["A", "B"]\n  X:\n    pinlabels: ["A", "B"]\n  Y:\n    pinlabels: ["A", "B"]\ncables:\n  C:\n    wirecount: 2\nconnections:\n  -\n    - X: [A, B]\n    - C.: [1, 2]\n    - P: [A, B]\n  -\n    - P\n    - [==]\n    - S\n  -\n    - S: [A, B]\n    - C.: [1, 2]\n    - Y: [A, B]\n`;
   const sheet = buildSheet(readWireviz([src], "x"));
   const place = await layoutElk(sheet);

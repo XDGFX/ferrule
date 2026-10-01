@@ -32,12 +32,6 @@ export const ELK_OPTIONS: Record<string, string> = {
   "elk.layered.thoroughness": "40",
 };
 
-/**
- * Wider than this, a sheet is wrapped into rows: a long chain is unreadable on a phone. Wrapping
- * sends wires between rows round the sheet's edge, so it is kept for sheets that really need it.
- */
-export const WRAP_ABOVE = 3;
-
 /** The gap between the two halves of a mated pair. */
 const MATE_GAP = 48;
 
@@ -50,8 +44,8 @@ interface Pair {
 
 /**
  * Mated connectors that can sit side by side as one node: the plug takes wires only from the
- * west and the socket only to the east, so nothing has to pass between them. Laid out as one,
- * a pair can't be split by a wrap, and its mate is drawn as the short link it is.
+ * west and the socket only to the east, so nothing has to pass between them. Laid out as one, a
+ * pair always sits side by side and its mate is drawn as the short link it is.
  */
 function pairs(sheet: Sheet): Pair[] {
   const cards = new Map(sheet.cards.map((c) => [c.id, c]));
@@ -69,20 +63,10 @@ function pairs(sheet: Sheet): Pair[] {
   return out;
 }
 
-/** Wrapping options. Applied only past WRAP_ABOVE, because it adds crossings to a sheet that fits. */
-export const WRAP_OPTIONS: Record<string, string> = {
-  "elk.layered.wrapping.strategy": "MULTI_EDGE",
-  "elk.aspectRatio": "1.6",
-};
-
-/** Lay out a sheet, wrapping it into rows if it comes out too wide to read on a phone. */
+// No wrapping into rows. ELK's own cut tends to fall through a multi-core cable, which sends a
+// ribbon of wires round the sheet's edge, and that reads worse than a wide sheet. elkjs can't take
+// a hand-picked cut either: it can't deserialise the list option. A wide sheet stays one row.
 export async function layoutElk(sheet: Sheet, options: Record<string, string> = {}): Promise<Placement> {
-  const flat = await layoutOnce(sheet, options);
-  if (flat.width / flat.height <= WRAP_ABOVE) return flat;
-  return layoutOnce(sheet, { ...WRAP_OPTIONS, ...options });
-}
-
-async function layoutOnce(sheet: Sheet, options: Record<string, string>): Promise<Placement> {
   const paired = pairs(sheet);
   const inPair = new Set(paired.flatMap((p) => [p.a.id, p.b.id]));
   const port = (card: Card, p: Card["ports"][number], dx = 0) => ({
