@@ -58,8 +58,8 @@ test("a connector's pinout lists every pin, the wire on it and where that wire g
   const plug = section("### PLUG");
   assert.match(plug, /Deutsch DT · mates with SOCKET/);
   assert.deepEqual(rows(plug), [
-    "| 1 | PUMP | LOOM 1 · RD | PANEL 1 · PUMP |",
-    "| 2 | GND | RUN · 1 · BK | WAGO |",
+    "| 1 | PUMP | LOOM core 1 (RD) | PANEL 1 · PUMP |",
+    "| 2 | GND | RUN · 1 (BK) | WAGO |",
     "| | | looped to 3 | |",
     "| 3 | SPARE | looped to 2 | |",
   ]);
@@ -67,9 +67,9 @@ test("a connector's pinout lists every pin, the wire on it and where that wire g
 
 test("a pin with several wires gets a row for each", () => {
   assert.deepEqual(rows(section("### WAGO")), [
-    "| – | | LOOM 2 · GNYE | PANEL 2 · GND |",
-    "| | | RUN · 1 · BK | PLUG 2 · GND |",
-    "| | | RUN · 2 · BK | – |",
+    "| – | | LOOM core 2 (GNYE) | PANEL 2 · GND |",
+    "| | | RUN · 1 (BK) | PLUG 2 · GND |",
+    "| | | RUN · 2 (BK) | – |",
   ]);
 });
 

@@ -18,7 +18,8 @@ export function tables(h: Harness): string {
   const connectors = new Map(h.connectors.map((c) => [c.id, c]));
   const cables = new Map(h.cables.map((c) => [c.id, c]));
 
-  // Fresh instances of a template drawn more than once are numbered, as on the diagram.
+  // Fresh instances of a template used more than once are numbered. Unlike the diagram, this
+  // counts single-core runs too: they have no card there, but each is a row here to cut.
   const fresh = [...h.connectors, ...h.cables].filter((c) => c.id.startsWith("__"));
   const repeated = new Set(fresh.map((c) => c.template).filter((t, i, all) => all.indexOf(t) !== all.lastIndexOf(t)));
   const name = (c: Connector | Cable) => displayName(c.id, c.template, repeated);
@@ -75,9 +76,10 @@ export function tables(h: Harness): string {
       const here = { connector: c.id, pin: p.num };
       const lines: [string, string][] = [];
       for (const core of order) {
-        const wire = `${name(core.cable)} ${core.wire} · ${colour(core)}`;
-        // A single core is named by its cable alone, as its own row in the cut list is.
-        const label = core.cable.wires.length === 1 ? `${name(core.cable)} · ${colour(core)}` : wire;
+        // A single core is named by its cable alone; a number after a cable is always a core.
+        const label = core.cable.wires.length === 1
+          ? `${name(core.cable)} (${colour(core)})`
+          : `${name(core.cable)} core ${core.wire} (${colour(core)})`;
         if (core.from.some((e) => same(e, here))) lines.push([label, ends(core.to)]);
         if (core.to.some((e) => same(e, here))) lines.push([label, ends(core.from)]);
       }
