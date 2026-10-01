@@ -21,12 +21,16 @@ export const STYLE = {
   tagSize: 10,
   tagH: 17,
   foldFrom: 3,
+  /** Room a pin's colour swatch takes before its label, on a card where any pin has one. */
+  swatchW: 14,
 };
 
 export interface Row {
   key: string;
   num: string;
   label: string;
+  /** Colour codes for the pin's marking, one per stripe. */
+  colours?: string[];
   /** Set on a row that stands in for a run of unused pins. */
   fold?: string;
 }
@@ -51,6 +55,8 @@ export interface Card {
   rowTop: number;
   rowH: number;
   rows: Row[];
+  /** Pins bridged on the card itself, by row key. */
+  loops: [string, string][];
   notes: string[];
   ports: Port[];
 }
@@ -63,6 +69,8 @@ export interface Tag {
 
 export interface Wire {
   id: string;
+  /** A mate is two connectors plugged together, drawn between their title bars. */
+  kind?: "mate";
   from: { card: string; port: string };
   to: { card: string; port: string };
   colours: string[];
@@ -93,13 +101,18 @@ export function buildSheet(h: Harness): Sheet {
     return { card, port: `${key}:${side}` };
   };
   const cables = new Map(h.cables.map((c) => [c.id, c]));
+  // A single core joining two pins is a run, drawn as one wire with a tag. One that splits, or
+  // ends open, needs somewhere for its branches to meet, so it gets a card like a multi-core.
+  const uses = new Map<string, number>();
+  for (const l of h.links) uses.set(l.cable, (uses.get(l.cable) ?? 0) + 1);
+  const isRun = (c: Cable) => c.wires.length === 1 && uses.get(c.id) === 1 && h.links.some((l) => l.cable === c.id && l.from && l.to);
 
   for (const [i, l] of h.links.entries()) {
     const c = cables.get(l.cable)!;
     const core = c.wires[l.wire - 1];
     const base = { colours: core.colours.length ? core.colours : ["GY"], weight: weight(c.gauge) };
-    if (c.wires.length === 1) {
-      if (!l.from || !l.to) throw new Error(`${c.template}: a single-core run needs both ends`);
+    if (isRun(c)) {
+      if (!l.from || !l.to) throw new Error(`${c.id}: a run needs both ends`);
       wires.push({
         id: `w${i}`,
         from: touch(l.from.connector, l.from.pin, "E"),
@@ -114,9 +127,18 @@ export function buildSheet(h: Harness): Sheet {
     if (l.to) wires.push({ id: `w${i}b`, from: touch(c.id, key, "E"), to: touch(l.to.connector, l.to.pin, "W"), ...base });
   }
 
+  for (const [i, m] of h.mates.entries()) {
+    wires.push({ id: `m${i}`, kind: "mate", from: touch(m.from, "mate", "E"), to: touch(m.to, "mate", "W"), colours: [], weight: 0 });
+  }
+
   const cards: Card[] = [];
-  for (const c of h.connectors) cards.push(connectorCard(c, used.get(c.id) ?? new Map()));
-  for (const c of h.cables) if (c.wires.length > 1) cards.push(cableCard(c, used.get(c.id) ?? new Map()));
+  for (const c of h.connectors) {
+    const pins = used.get(c.id) ?? new Map<string, Set<Side>>();
+    // A looped pin is in use even with no wire on it, so it isn't folded away.
+    const inUse = new Set([...pins.keys(), ...c.loops.flat()]);
+    cards.push(connectorCard(c, pins, inUse));
+  }
+  for (const c of h.cables) if (!isRun(c)) cards.push(cableCard(c, used.get(c.id) ?? new Map()));
   return { title: h.title, cards, wires };
 }
 
@@ -140,7 +162,7 @@ function fmt(n: number): string {
   return String(Number(n.toFixed(2)));
 }
 
-function connectorCard(c: Connector, used: Map<string, Set<Side>>): Card {
+function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>): Card {
   const sub = [c.type, c.subtype].filter(Boolean).join(" · ");
   if (c.simple) {
     const w = width([textWidth(c.id, STYLE.titleSize, 600) + 40, textWidth(sub, STYLE.subSize) + 24]);
@@ -159,14 +181,17 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>): Card {
     run = [];
   };
   for (const p of c.pins) {
-    const row = { key: p.num, num: p.num, label: p.label || p.num };
-    if (used.has(p.num)) {
+    const row: Row = { key: p.num, num: p.num, label: p.label || p.num };
+    if (p.colours.length) row.colours = p.colours;
+    if (inUse.has(p.num)) {
       flush();
       rows.push(row);
     } else run.push(row);
   }
   flush();
-  return finish(base(c.id, "connector", c.id, sub, c.accent, 0, rows, c.notes), used);
+  const card = base(c.id, "connector", c.id, sub, c.accent, 0, rows, c.notes);
+  card.loops = c.loops;
+  return finish(card, used);
 }
 
 function cableCard(c: Cable, used: Map<string, Set<Side>>): Card {
@@ -177,19 +202,21 @@ function cableCard(c: Cable, used: Map<string, Set<Side>>): Card {
 }
 
 function base(id: string, kind: Card["kind"], title: string, sub: string, accent: string, w: number, rows: Row[], notes: string[]): Card {
-  return { id, kind, title, sub, accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, notes, ports: [] };
+  return { id, kind, title, sub, accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
 }
 
 function finish(card: Card, used: Map<string, Set<Side>>): Card {
   const s = STYLE;
+  const swatch = card.rows.some((r) => r.colours) ? s.swatchW : 0;
   card.w = width([
     textWidth(card.title, s.titleSize, 600) + 28 + s.pad,
     textWidth(card.sub, s.subSize) + 2 * s.pad,
-    ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1) + 2 * s.pad : s.numW + 8 + textWidth(r.label, s.rowSize) + 34)),
+    ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1, 400, true) + 2 * s.pad : s.numW + 8 + swatch + textWidth(r.label, s.rowSize) + 34)),
   ]);
   card.notes = wrap(card.notes, card.w - 2 * s.pad);
   card.h = s.headH + card.rows.length * s.rowH + (card.notes.length ? 10 + card.notes.length * s.noteLh : 0);
   card.ports = ports(used, card, (key) => {
+    if (key === "mate") return card.rowTop / 2;
     const i = card.rows.findIndex((r) => r.key === key);
     return card.rowTop + i * card.rowH + card.rowH / 2;
   });
@@ -197,7 +224,9 @@ function finish(card: Card, used: Map<string, Set<Side>>): Card {
 }
 
 function ports(used: Map<string, Set<Side>>, card: Card, y: (key: string) => number): Port[] {
-  const keys = [...used.keys()].sort((a, b) => Number(a) - Number(b) || a.localeCompare(b));
+  // The mate port sits in the title bar, above every pin, so it sorts first.
+  const rank = (k: string) => (k === "mate" ? -1 : Number(k));
+  const keys = [...used.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
   return keys.flatMap((key) =>
     (["W", "E"] as const).filter((s) => used.get(key)!.has(s)).map((side) => ({ id: `${key}:${side}`, side, x: side === "W" ? 0 : card.w, y: y(key) })),
   );

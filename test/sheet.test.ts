@@ -80,3 +80,46 @@ test("a cable card carries its notes", () => {
   const h: Harness = { ...harness, cables: harness.cables.map((c) => (c.id === "TWIN" ? { ...c, notes: ["Verify gauge"] } : c)) };
   assert.deepEqual(buildSheet(h).cards.find((c) => c.id === "TWIN")!.notes, ["Verify gauge"]);
 });
+
+const more: Harness = {
+  ...harness,
+  connectors: [
+    conn("A", 12),
+    conn("P", 4),
+    { ...conn("Q", 4), pins: pins(4).map((p, i) => ({ ...p, colours: i === 1 ? ["GN", "YE"] : [] })), loops: [["2", "3"]] },
+    conn("R", 2),
+  ],
+  cables: [{ ...harness.cables[0], id: "FEED", template: "FEED" }],
+  links: [
+    { cable: "FEED", wire: 1, from: { connector: "A", pin: "1" }, to: null },
+    { cable: "FEED", wire: 1, from: null, to: { connector: "R", pin: "1" } },
+    { cable: "FEED", wire: 1, from: null, to: { connector: "R", pin: "2" } },
+  ],
+  mates: [{ from: "P", to: "Q" }],
+};
+const sheet2 = buildSheet(more);
+const card2 = (id: string) => sheet2.cards.find((c) => c.id === id)!;
+
+test("a single core that splits or ends open is a card, not a tag", () => {
+  assert.equal(card2("FEED").kind, "cable");
+  assert.deepEqual(sheet2.wires.filter((w) => w.from.card === "FEED").map((w) => w.to), [
+    { card: "R", port: "1:W" },
+    { card: "R", port: "2:W" },
+  ]);
+});
+
+test("a mate joins two connectors at their title bars", () => {
+  const m = sheet2.wires.find((w) => w.kind === "mate")!;
+  assert.deepEqual([m.from, m.to], [{ card: "P", port: "mate:E" }, { card: "Q", port: "mate:W" }]);
+  const port = card2("P").ports.find((p) => p.id === "mate:E")!;
+  assert.equal(port.y, card2("P").rowTop / 2);
+});
+
+test("looped pins stay unfolded and the loop is kept on the card", () => {
+  assert.deepEqual(card2("Q").rows.map((r) => r.fold ?? r.label), ["P1", "P2", "P3", "P4"]);
+  assert.deepEqual(card2("Q").loops, [["2", "3"]]);
+});
+
+test("pin colours reach the rows", () => {
+  assert.deepEqual(card2("Q").rows.map((r) => r.colours), [undefined, ["GN", "YE"], undefined, undefined]);
+});
