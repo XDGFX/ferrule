@@ -117,7 +117,7 @@ no longer be identical across machines.
 - [x] **Look.** Three style directions were built by hand and checked on a phone, and *Instrument* was chosen.
 - [x] **Layout spike.** Lay out a large, dense loom with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
 - [x] **Parity.** Render a full set of real looms until every one is correct. Their connections match WireViz's, and the project that uses them diffs the SVGs byte for byte in CI.
-- [ ] **New outputs.** Pinout tables per connector in Markdown, a cut list, and gauge checks against terminal and fuse limits.
+- [x] **New outputs.** Pinout tables per connector and a cut list, in Markdown. Gauge checks against fuse and contact limits live in the project that uses ferrule, since they don't need the renderer.
 - [ ] **Plumbing.** Pipe runs, fittings and tanks on the same core.
 
 ## Not planned
