@@ -1,0 +1,286 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="mk mk-a" viewBox="0 0 1805 878" width="1805" height="878" role="img" aria-label="heating_systems, direction A">
+<style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap");
+.mk-a{--bg:#eef0f3;--card:#ffffff;--card2:#f5f6f8;--line:#d5d9df;--text:#1b1f24;--muted:#5e6670;--faint:#9aa1aa;--casing:#7f8792;--case-bk:#7f8792;--case-wh:#7f8792;--tag-bg:#ffffff;--tag-text:#1b1f24;--grid:none}
+@media (prefers-color-scheme: dark){.mk-a:not(.light){--bg:#121418;--card:#1c1f25;--card2:#23272e;--line:#323741;--text:#e8eaed;--muted:#9aa1ab;--faint:#626a75;--casing:#5d6570;--case-bk:#9aa1ab;--case-wh:#5d6570;--tag-bg:#23272e;--tag-text:#e8eaed;--grid:none}}
+.mk-a.dark{--bg:#121418;--card:#1c1f25;--card2:#23272e;--line:#323741;--text:#e8eaed;--muted:#9aa1ab;--faint:#626a75;--casing:#5d6570;--case-bk:#9aa1ab;--case-wh:#5d6570;--tag-bg:#23272e;--tag-text:#e8eaed;--grid:none}
+.mk-a text{font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;fill:#1b1f24}
+.mk-a .mono{font-family:'Inter', 'Helvetica Neue', Arial, sans-serif}
+.mk-a .bg{fill:#eef0f3}
+.mk-a .card{fill:#ffffff;stroke:#d5d9df;stroke-width:1}
+.mk-a .card2{fill:#f5f6f8}
+.mk-a .rule{stroke:#d5d9df;stroke-width:1}
+.mk-a .muted{fill:#5e6670}
+.mk-a .faint{fill:#9aa1aa}
+.mk-a .casing{fill:none;stroke:#7f8792;stroke-linecap:butt;stroke-linejoin:round}
+.mk-a .case-bk{stroke:#7f8792}
+.mk-a .case-wh{stroke:#7f8792}
+.mk-a .core{fill:none;stroke-linecap:butt;stroke-linejoin:round}
+.mk-a .tag{fill:#ffffff;stroke:#d5d9df;stroke-width:1}
+.mk-a .tagt{fill:#1b1f24}
+.mk-a .port{fill:#ffffff;stroke:#5e6670;stroke-width:1.2}
+.mk-a .term{fill:#1b1f24}
+.mk-a .grid{fill:none}
+</style>
+<rect class="bg" width="1805" height="878"/>
+<text x="40" y="38" font-size="20" font-weight="600">heating_systems</text>
+<text class="muted" x="40" y="58" font-size="11.5">Diesel heater, underfloor pump and coolant sensors to the heating DT connector</text>
+<rect class="card" x="40" y="84" width="270" height="200" rx="9"/>
+<rect x="52" y="96" width="10" height="10" rx="2.5" style="fill:#9fdcfb"/>
+<text x="68" y="105" font-size="13" font-weight="600">FUSE_PANEL_A</text>
+<text class="muted" x="52" y="123" font-size="10.5">Fuse panel · Blue Sea Systems</text>
+<rect x="248.7" y="93" width="49.3" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="273.4" y="105" text-anchor="middle" font-size="10.5">13-pin</text>
+<text class="faint" x="62" y="156.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">1</text>
+<text class="faint" x="78" y="156.14" font-size="11.5">PUMP_WATER_FRESH</text>
+<rect x="288" y="147.0" width="10" height="10" rx="2" style="fill:#e23b3b;stroke:#7f8792;stroke-width:.8"/>
+<line class="rule" x1="50" y1="164" x2="300" y2="164" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="180.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">2</text>
+<text class="" x="78" y="180.14" font-size="11.5">HEATER_DIESEL</text>
+<rect x="288" y="171.0" width="10" height="10" rx="2" style="fill:#2f6fd8;stroke:#7f8792;stroke-width:.8"/>
+<line class="rule" x1="50" y1="188" x2="300" y2="188" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="204.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">3</text>
+<text class="" x="78" y="204.14" font-size="11.5">PUMP_WATER_FLOW_HEATER</text>
+<rect x="288" y="195.0" width="10" height="10" rx="2" style="fill:#e23b3b;stroke:#7f8792;stroke-width:.8"/>
+<line class="rule" x1="50" y1="212" x2="300" y2="212" stroke-opacity="0.55"/>
+<text class="faint" x="175.0" y="228.14" text-anchor="middle" font-size="10.5" font-style="italic">4–12 · 9 unused</text>
+<line class="rule" x1="50" y1="236" x2="300" y2="236" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="252.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">13</text>
+<text class="" x="78" y="252.14" font-size="11.5">GND</text>
+<line class="rule" x1="40" y1="260" x2="310" y2="260"/>
+<text class="muted" x="52" y="279" font-size="10">32 V DC · 100 A per block · 30 A per circuit</text>
+<rect class="card" x="500" y="84.0" width="250" height="200" rx="9"/>
+<rect x="512" y="96.0" width="10" height="10" rx="2.5" style="fill:#7d8a99"/>
+<text x="528" y="105.0" font-size="13" font-weight="600">WAVESHARE_RELAY</text>
+<text class="muted" x="512" y="123.0" font-size="10.5">Waveshare WS-27876 · 8-ch Modbus relay</text>
+<rect x="688.7" y="93.0" width="49.3" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="713.4" y="105.0" text-anchor="middle" font-size="10.5">24-pin</text>
+<text class="muted" x="522" y="156.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">1</text>
+<text class="" x="538" y="156.14" font-size="11.5">CH1_NO</text>
+<line class="rule" x1="510" y1="164.0" x2="740" y2="164.0" stroke-opacity="0.55"/>
+<text class="muted" x="522" y="180.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">2</text>
+<text class="" x="538" y="180.14" font-size="11.5">CH1_COM</text>
+<line class="rule" x1="510" y1="188.0" x2="740" y2="188.0" stroke-opacity="0.55"/>
+<text class="faint" x="522" y="204.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">3</text>
+<text class="faint" x="538" y="204.14" font-size="11.5">CH1_NC</text>
+<line class="rule" x1="510" y1="212.0" x2="740" y2="212.0" stroke-opacity="0.55"/>
+<text class="muted" x="522" y="228.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">4</text>
+<text class="" x="538" y="228.14" font-size="11.5">CH2_NO</text>
+<line class="rule" x1="510" y1="236.0" x2="740" y2="236.0" stroke-opacity="0.55"/>
+<text class="muted" x="522" y="252.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">5</text>
+<text class="" x="538" y="252.14" font-size="11.5">CH2_COM</text>
+<line class="rule" x1="510" y1="260.0" x2="740" y2="260.0" stroke-opacity="0.55"/>
+<text class="faint" x="625.0" y="276.14" text-anchor="middle" font-size="10.5" font-style="italic">6–24 · 19 unused</text>
+<rect class="card" x="40" y="310" width="250" height="152" rx="9"/>
+<rect x="52" y="322" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
+<text x="68" y="331" font-size="13" font-weight="600">CERBO_DIN</text>
+<text class="muted" x="52" y="349" font-size="10.5">Victron · 4× digital input</text>
+<rect x="234.6" y="319" width="43.4" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="256.3" y="331" text-anchor="middle" font-size="10.5">8-pin</text>
+<text class="faint" x="165.0" y="382.14" text-anchor="middle" font-size="10.5" font-style="italic">1–2 · 2 unused</text>
+<line class="rule" x1="50" y1="390" x2="280" y2="390" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="406.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">3</text>
+<text class="" x="78" y="406.14" font-size="11.5">DIN1+</text>
+<line class="rule" x1="50" y1="414" x2="280" y2="414" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="430.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">4</text>
+<text class="" x="78" y="430.14" font-size="11.5">DIN1-</text>
+<line class="rule" x1="50" y1="438" x2="280" y2="438" stroke-opacity="0.55"/>
+<text class="faint" x="165.0" y="454.14" text-anchor="middle" font-size="10.5" font-style="italic">5–8 · 4 unused</text>
+<rect class="card" x="40" y="488" width="250" height="152" rx="9"/>
+<rect x="52" y="500" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
+<text x="68" y="509" font-size="13" font-weight="600">CERBO_TANK</text>
+<text class="muted" x="52" y="527" font-size="10.5">Victron · 4× resistive tank</text>
+<rect x="234.6" y="497" width="43.4" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="256.3" y="509" text-anchor="middle" font-size="10.5">8-pin</text>
+<text class="faint" x="165.0" y="560.14" text-anchor="middle" font-size="10.5" font-style="italic">1–4 · 4 unused</text>
+<line class="rule" x1="50" y1="568" x2="280" y2="568" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="584.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">5</text>
+<text class="" x="78" y="584.14" font-size="11.5">TANK2+</text>
+<line class="rule" x1="50" y1="592" x2="280" y2="592" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="608.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">6</text>
+<text class="" x="78" y="608.14" font-size="11.5">TANK2-</text>
+<line class="rule" x1="50" y1="616" x2="280" y2="616" stroke-opacity="0.55"/>
+<text class="faint" x="165.0" y="632.14" text-anchor="middle" font-size="10.5" font-style="italic">7–8 · 2 unused</text>
+<rect class="card" x="40" y="666" width="250" height="152" rx="9"/>
+<rect x="52" y="678" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
+<text x="68" y="687" font-size="13" font-weight="600">CERBO_TEMP</text>
+<text class="muted" x="52" y="705" font-size="10.5">Victron · 4× temperature</text>
+<rect x="234.6" y="675" width="43.4" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="256.3" y="687" text-anchor="middle" font-size="10.5">8-pin</text>
+<text class="faint" x="165.0" y="738.14" text-anchor="middle" font-size="10.5" font-style="italic">1–2 · 2 unused</text>
+<line class="rule" x1="50" y1="746" x2="280" y2="746" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="762.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">3</text>
+<text class="" x="78" y="762.14" font-size="11.5">TEMP1+</text>
+<line class="rule" x1="50" y1="770" x2="280" y2="770" stroke-opacity="0.55"/>
+<text class="muted" x="62" y="786.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">4</text>
+<text class="" x="78" y="786.14" font-size="11.5">TEMP1-</text>
+<line class="rule" x1="50" y1="794" x2="280" y2="794" stroke-opacity="0.55"/>
+<text class="faint" x="165.0" y="810.14" text-anchor="middle" font-size="10.5" font-style="italic">5–8 · 4 unused</text>
+<rect class="card" x="930" y="120.0" width="300" height="262" rx="9" stroke-dasharray="5 3"/>
+<rect x="942" y="132.0" width="10" height="10" rx="2.5" style="fill:#efe6c8"/>
+<text x="958" y="141.0" font-size="13" font-weight="600">HEATING_SYSTEMS_CABLE</text>
+<text class="muted" x="942" y="159.0" font-size="10.5">Silicone multi-core · Custom · eBay</text>
+<rect x="1145.2" y="129.0" width="72.8" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="1181.6" y="141.0" text-anchor="middle" font-size="10.5">7 × 16 AWG</text>
+<line class="rule" x1="940" y1="200.0" x2="1220" y2="200.0" stroke-opacity="0.55"/>
+<line class="rule" x1="940" y1="224.0" x2="1220" y2="224.0" stroke-opacity="0.55"/>
+<line class="rule" x1="940" y1="248.0" x2="1220" y2="248.0" stroke-opacity="0.55"/>
+<line class="rule" x1="940" y1="272.0" x2="1220" y2="272.0" stroke-opacity="0.55"/>
+<line class="rule" x1="940" y1="296.0" x2="1220" y2="296.0" stroke-opacity="0.55"/>
+<line class="rule" x1="940" y1="320.0" x2="1220" y2="320.0" stroke-opacity="0.55"/>
+<line class="rule" x1="930" y1="344.0" x2="1230" y2="344.0"/>
+<text class="muted" x="942" y="363.0" font-size="10">Assemble from individual cores, colour-identified</text>
+<text class="muted" x="942" y="377.0" font-size="10">Identifier at each end · PET braid · heat-shrink ends</text>
+<rect class="card" x="1350" y="120.0" width="254.6" height="286" rx="9"/>
+<rect x="1362" y="132.0" width="10" height="10" rx="2.5" style="fill:#ff8a1f"/>
+<text x="1378" y="141.0" font-size="13" font-weight="600">HEATING_SYSTEMS_CONN</text>
+<text class="muted" x="1362" y="159.0" font-size="10.5">Deutsch DT · to the heating loom</text>
+<rect x="1549.2" y="129.0" width="43.4" height="17" rx="8.5" style="fill:none;stroke:#d5d9df"/>
+<text class="muted" x="1570.9" y="141.0" text-anchor="middle" font-size="10.5">8-pin</text>
+<text class="muted" x="1372" y="192.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">1</text>
+<text class="" x="1388" y="192.14" font-size="11.5">HEATER_EN</text>
+<line class="rule" x1="1360" y1="200.0" x2="1594.6" y2="200.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="216.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">2</text>
+<text class="" x="1388" y="216.14" font-size="11.5">UNDERFLOOR_PUMP</text>
+<line class="rule" x1="1360" y1="224.0" x2="1594.6" y2="224.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="240.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">3</text>
+<text class="" x="1388" y="240.14" font-size="11.5">HEATER_BULB</text>
+<line class="rule" x1="1360" y1="248.0" x2="1594.6" y2="248.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="264.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">4</text>
+<text class="" x="1388" y="264.14" font-size="11.5">COOLANT_LEVEL</text>
+<line class="rule" x1="1360" y1="272.0" x2="1594.6" y2="272.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="288.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">5</text>
+<text class="" x="1388" y="288.14" font-size="11.5">COOLANT_TEMP</text>
+<line class="rule" x1="1360" y1="296.0" x2="1594.6" y2="296.0" stroke-opacity="0.55"/>
+<text class="faint" x="1372" y="312.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">6</text>
+<text class="faint" x="1388" y="312.14" font-size="11.5">SPARE</text>
+<line class="rule" x1="1360" y1="320.0" x2="1594.6" y2="320.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="336.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">7</text>
+<text class="" x="1388" y="336.14" font-size="11.5">SIGNAL_GND</text>
+<line class="rule" x1="1360" y1="344.0" x2="1594.6" y2="344.0" stroke-opacity="0.55"/>
+<text class="muted" x="1372" y="360.14" text-anchor="end" font-size="10.5" style="font-variant-numeric:tabular-nums">8</text>
+<text class="" x="1388" y="360.14" font-size="11.5">GND</text>
+<line class="rule" x1="1350" y1="368.0" x2="1604.6" y2="368.0"/>
+<text class="muted" x="1362" y="387.0" font-size="10">AWG 20–14 · seals 1.35–3.68 mm</text>
+<text class="muted" x="1362" y="401.0" font-size="10">13 A per pin</text>
+<rect x="540" y="577.0" width="96" height="54" rx="27.0" style="fill:#ffffff;stroke:#d5d9df"/>
+<text x="588.0" y="608.0" text-anchor="middle" font-size="11.5" font-weight="600" >Wago 221</text>
+<path class="casing" d="M310.0,176.0 L500.0,176.0" stroke-width="5.4"/>
+<path class="core" d="M310.0,176.0 L500.0,176.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="casing" d="M310.0,200.0 L331.0,200.0 Q345.0,200.0 345.0,214.0 L345.0,234.0 Q345.0,248.0 359.0,248.0 L500.0,248.0" stroke-width="5.4"/>
+<path class="core" d="M310.0,200.0 L331.0,200.0 Q345.0,200.0 345.0,214.0 L345.0,234.0 Q345.0,248.0 359.0,248.0 L500.0,248.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="casing" d="M750.0,152.0 L836.0,152.0 Q850.0,152.0 850.0,166.0 L850.0,174.0 Q850.0,188.0 864.0,188.0 L930.0,188.0" stroke-width="5.4"/>
+<path class="core" d="M750.0,152.0 L836.0,152.0 Q850.0,152.0 850.0,166.0 L850.0,174.0 Q850.0,188.0 864.0,188.0 L930.0,188.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="casing case-wh" d="M750.0,224.0 L864.0,224.0 Q870.0,224.0 870.0,218.0 L870.0,218.0 Q870.0,212.0 876.0,212.0 L930.0,212.0" stroke-width="5.4"/>
+<path class="core" d="M750.0,224.0 L864.0,224.0 Q870.0,224.0 870.0,218.0 L870.0,218.0 Q870.0,212.0 876.0,212.0 L930.0,212.0" stroke="#f3f3f1" stroke-width="3.0"/>
+<path class="casing case-bk" d="M310.0,248.0 L316.0,248.0 Q322.0,248.0 322.0,254.0 L322.0,318.0 Q322.0,332.0 336.0,332.0 L930.0,332.0" stroke-width="5.4"/>
+<path class="core" d="M310.0,248.0 L316.0,248.0 Q322.0,248.0 322.0,254.0 L322.0,318.0 Q322.0,332.0 336.0,332.0 L930.0,332.0" stroke="#141518" stroke-width="3.0"/>
+<path class="casing" d="M290.0,402.0 L776.0,402.0 Q790.0,402.0 790.0,388.0 L790.0,250.0 Q790.0,236.0 804.0,236.0 L930.0,236.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,402.0 L776.0,402.0 Q790.0,402.0 790.0,388.0 L790.0,250.0 Q790.0,236.0 804.0,236.0 L930.0,236.0" stroke="#2f9f4f" stroke-width="3.0"/>
+<path class="casing" d="M290.0,580.0 L796.0,580.0 Q810.0,580.0 810.0,566.0 L810.0,274.0 Q810.0,260.0 824.0,260.0 L930.0,260.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,580.0 L796.0,580.0 Q810.0,580.0 810.0,566.0 L810.0,274.0 Q810.0,260.0 824.0,260.0 L930.0,260.0" stroke="#2f6fd8" stroke-width="3.0"/>
+<path class="casing" d="M290.0,758.0 L816.0,758.0 Q830.0,758.0 830.0,744.0 L830.0,298.0 Q830.0,284.0 844.0,284.0 L930.0,284.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,758.0 L816.0,758.0 Q830.0,758.0 830.0,744.0 L830.0,298.0 Q830.0,284.0 844.0,284.0 L930.0,284.0" stroke="#8a52d3" stroke-width="3.0"/>
+<path class="casing" d="M290.0,426.0 L456.0,426.0 Q470.0,426.0 470.0,440.0 L470.0,576.0 Q470.0,590.0 484.0,590.0 L540.0,590.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,426.0 L456.0,426.0 Q470.0,426.0 470.0,440.0 L470.0,576.0 Q470.0,590.0 484.0,590.0 L540.0,590.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing" d="M290.0,604.0 L540.0,604.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,604.0 L540.0,604.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing" d="M290.0,782.0 L456.0,782.0 Q470.0,782.0 470.0,768.0 L470.0,632.0 Q470.0,618.0 484.0,618.0 L540.0,618.0" stroke-width="5.4"/>
+<path class="core" d="M290.0,782.0 L456.0,782.0 Q470.0,782.0 470.0,768.0 L470.0,632.0 Q470.0,618.0 484.0,618.0 L540.0,618.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing" d="M636.0,604.0 L876.0,604.0 Q890.0,604.0 890.0,590.0 L890.0,322.0 Q890.0,308.0 904.0,308.0 L930.0,308.0" stroke-width="5.4"/>
+<path class="core" d="M636.0,604.0 L876.0,604.0 Q890.0,604.0 890.0,590.0 L890.0,322.0 Q890.0,308.0 904.0,308.0 L930.0,308.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing" d="M1230.0,188.0 L1350.0,188.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,188.0 L1350.0,188.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="casing case-wh" d="M1230.0,212.0 L1350.0,212.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,212.0 L1350.0,212.0" stroke="#f3f3f1" stroke-width="3.0"/>
+<path class="casing" d="M1230.0,236.0 L1350.0,236.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,236.0 L1350.0,236.0" stroke="#2f9f4f" stroke-width="3.0"/>
+<path class="casing" d="M1230.0,260.0 L1350.0,260.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,260.0 L1350.0,260.0" stroke="#2f6fd8" stroke-width="3.0"/>
+<path class="casing" d="M1230.0,284.0 L1350.0,284.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,284.0 L1350.0,284.0" stroke="#8a52d3" stroke-width="3.0"/>
+<path class="casing" d="M1230.0,308.0 L1288.0,308.0 Q1300.0,308.0 1300.0,320.0 L1300.0,320.0 Q1300.0,332.0 1312.0,332.0 L1350.0,332.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,308.0 L1288.0,308.0 Q1300.0,308.0 1300.0,320.0 L1300.0,320.0 Q1300.0,332.0 1312.0,332.0 L1350.0,332.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing case-bk" d="M1230.0,332.0 L1288.0,332.0 Q1300.0,332.0 1300.0,344.0 L1300.0,344.0 Q1300.0,356.0 1312.0,356.0 L1350.0,356.0" stroke-width="5.4"/>
+<path class="core" d="M1230.0,332.0 L1288.0,332.0 Q1300.0,332.0 1300.0,344.0 L1300.0,344.0 Q1300.0,356.0 1312.0,356.0 L1350.0,356.0" stroke="#141518" stroke-width="3.0"/>
+<path class="casing" d="M930,188.0 L1230,188.0" stroke-width="5.4"/>
+<path class="core" d="M930,188.0 L1230,188.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="casing case-wh" d="M930,212.0 L1230,212.0" stroke-width="5.4"/>
+<path class="core" d="M930,212.0 L1230,212.0" stroke="#f3f3f1" stroke-width="3.0"/>
+<path class="casing" d="M930,236.0 L1230,236.0" stroke-width="5.4"/>
+<path class="core" d="M930,236.0 L1230,236.0" stroke="#2f9f4f" stroke-width="3.0"/>
+<path class="casing" d="M930,260.0 L1230,260.0" stroke-width="5.4"/>
+<path class="core" d="M930,260.0 L1230,260.0" stroke="#2f6fd8" stroke-width="3.0"/>
+<path class="casing" d="M930,284.0 L1230,284.0" stroke-width="5.4"/>
+<path class="core" d="M930,284.0 L1230,284.0" stroke="#8a52d3" stroke-width="3.0"/>
+<path class="casing" d="M930,308.0 L1230,308.0" stroke-width="5.4"/>
+<path class="core" d="M930,308.0 L1230,308.0" stroke="#f0c419" stroke-width="3.0"/>
+<path class="casing case-bk" d="M930,332.0 L1230,332.0" stroke-width="5.4"/>
+<path class="core" d="M930,332.0 L1230,332.0" stroke="#141518" stroke-width="3.0"/>
+<rect x="1040.3" y="179.5" width="79.4" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="192.0" text-anchor="middle" font-size="11.0">HEATER_EN</text>
+<text class="muted" x="944" y="183.0" font-size="9">RD</text>
+<rect x="1019.2" y="203.5" width="121.6" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="216.0" text-anchor="middle" font-size="11.0">UNDERFLOOR_PUMP</text>
+<text class="muted" x="944" y="207.0" font-size="9">WH</text>
+<rect x="1033.3" y="227.5" width="93.4" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="240.0" text-anchor="middle" font-size="11.0">HEATER_BULB</text>
+<text class="muted" x="944" y="231.0" font-size="9">GN</text>
+<rect x="1026.2" y="251.5" width="107.5" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="264.0" text-anchor="middle" font-size="11.0">COOLANT_LEVEL</text>
+<text class="muted" x="944" y="255.0" font-size="9">BU</text>
+<rect x="1029.8" y="275.5" width="100.5" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="288.0" text-anchor="middle" font-size="11.0">COOLANT_TEMP</text>
+<text class="muted" x="944" y="279.0" font-size="9">VT</text>
+<rect x="1036.8" y="299.5" width="86.4" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="312.0" text-anchor="middle" font-size="11.0">SIGNAL_GND</text>
+<text class="muted" x="944" y="303.0" font-size="9">YE</text>
+<rect x="1061.4" y="323.5" width="37.1" height="17" rx="8.5" class="card" style="stroke-opacity:.9"/>
+<text x="1080.0" y="336.0" text-anchor="middle" font-size="11.0">GND</text>
+<text class="muted" x="944" y="327.0" font-size="9">BK</text>
+<circle class="port" cx="310" cy="176.0" r="3.2"/>
+<circle class="port" cx="500" cy="176.0" r="3.2"/>
+<circle class="port" cx="310" cy="200.0" r="3.2"/>
+<circle class="port" cx="500" cy="248.0" r="3.2"/>
+<circle class="port" cx="750" cy="152.0" r="3.2"/>
+<circle class="port" cx="750" cy="224.0" r="3.2"/>
+<circle class="port" cx="310" cy="248.0" r="3.2"/>
+<circle class="port" cx="290" cy="402.0" r="3.2"/>
+<circle class="port" cx="290" cy="580.0" r="3.2"/>
+<circle class="port" cx="290" cy="758.0" r="3.2"/>
+<circle class="port" cx="290" cy="426.0" r="3.2"/>
+<circle class="port" cx="540" cy="590.0" r="3.2"/>
+<circle class="port" cx="290" cy="604.0" r="3.2"/>
+<circle class="port" cx="540" cy="604.0" r="3.2"/>
+<circle class="port" cx="290" cy="782.0" r="3.2"/>
+<circle class="port" cx="540" cy="618.0" r="3.2"/>
+<circle class="port" cx="636" cy="604.0" r="3.2"/>
+<circle class="port" cx="1350" cy="188.0" r="3.2"/>
+<circle class="port" cx="1350" cy="212.0" r="3.2"/>
+<circle class="port" cx="1350" cy="236.0" r="3.2"/>
+<circle class="port" cx="1350" cy="260.0" r="3.2"/>
+<circle class="port" cx="1350" cy="284.0" r="3.2"/>
+<circle class="port" cx="1350" cy="332.0" r="3.2"/>
+<circle class="port" cx="1350" cy="356.0" r="3.2"/>
+<rect class="tag" x="359.8" y="167.5" width="90.4" height="17" rx="8.5"/>
+<text class="tagt" x="405.0" y="179.6" text-anchor="middle" font-size="10.0">24V · 1 × RD</text>
+<rect class="tag" x="377.3" y="239.5" width="90.4" height="17" rx="8.5"/>
+<text class="tagt" x="422.5" y="251.6" text-anchor="middle" font-size="10.0">24V · 1 × RD</text>
+<text class="muted" x="1350" y="708" font-size="10.5" font-weight="600">Two-colour wires</text>
+<text class="faint" x="1350" y="723" font-size="9.5">None in Hailey yet. Shown round a bend to test the tracer.</text>
+<path class="casing" d="M1350.0,746.0 L1413.0,746.0 Q1420.0,746.0 1420.0,753.0 L1420.0,753.0 Q1420.0,760.0 1427.0,760.0 L1500.0,760.0" stroke-width="5.4"/>
+<path class="core" d="M1350.0,746.0 L1413.0,746.0 Q1420.0,746.0 1420.0,753.0 L1420.0,753.0 Q1420.0,760.0 1427.0,760.0 L1500.0,760.0" stroke="#2f9f4f" stroke-width="3.0"/>
+<path class="core" d="M1350.0,746.0 L1413.0,746.0 Q1420.0,746.0 1420.0,753.0 L1420.0,753.0 Q1420.0,760.0 1427.0,760.0 L1500.0,760.0" stroke="#f0c419" stroke-width="1.5" stroke-dasharray="12 7"/>
+<text class="mono" x="1512" y="764" font-size="10.5">GN/YE</text>
+<path class="casing case-wh" d="M1350.0,772.0 L1413.0,772.0 Q1420.0,772.0 1420.0,779.0 L1420.0,779.0 Q1420.0,786.0 1427.0,786.0 L1500.0,786.0" stroke-width="5.4"/>
+<path class="core" d="M1350.0,772.0 L1413.0,772.0 Q1420.0,772.0 1420.0,779.0 L1420.0,779.0 Q1420.0,786.0 1427.0,786.0 L1500.0,786.0" stroke="#f3f3f1" stroke-width="3.0"/>
+<path class="core" d="M1350.0,772.0 L1413.0,772.0 Q1420.0,772.0 1420.0,779.0 L1420.0,779.0 Q1420.0,786.0 1427.0,786.0 L1500.0,786.0" stroke="#2f6fd8" stroke-width="1.5" stroke-dasharray="12 7"/>
+<text class="mono" x="1512" y="790" font-size="10.5">WH/BU</text>
+<path class="casing case-bk" d="M1350.0,798.0 L1413.0,798.0 Q1420.0,798.0 1420.0,805.0 L1420.0,805.0 Q1420.0,812.0 1427.0,812.0 L1500.0,812.0" stroke-width="5.4"/>
+<path class="core" d="M1350.0,798.0 L1413.0,798.0 Q1420.0,798.0 1420.0,805.0 L1420.0,805.0 Q1420.0,812.0 1427.0,812.0 L1500.0,812.0" stroke="#141518" stroke-width="3.0"/>
+<path class="core" d="M1350.0,798.0 L1413.0,798.0 Q1420.0,798.0 1420.0,805.0 L1420.0,805.0 Q1420.0,812.0 1427.0,812.0 L1500.0,812.0" stroke="#f3f3f1" stroke-width="1.5" stroke-dasharray="12 7"/>
+<text class="mono" x="1512" y="816" font-size="10.5">BK/WH</text>
+<path class="casing" d="M1350.0,824.0 L1413.0,824.0 Q1420.0,824.0 1420.0,831.0 L1420.0,831.0 Q1420.0,838.0 1427.0,838.0 L1500.0,838.0" stroke-width="5.4"/>
+<path class="core" d="M1350.0,824.0 L1413.0,824.0 Q1420.0,824.0 1420.0,831.0 L1420.0,831.0 Q1420.0,838.0 1427.0,838.0 L1500.0,838.0" stroke="#e23b3b" stroke-width="3.0"/>
+<path class="core" d="M1350.0,824.0 L1413.0,824.0 Q1420.0,824.0 1420.0,831.0 L1420.0,831.0 Q1420.0,838.0 1427.0,838.0 L1500.0,838.0" stroke="#141518" stroke-width="1.5" stroke-dasharray="12 7"/>
+<text class="mono" x="1512" y="842" font-size="10.5">RD/BK</text>
+</svg>
