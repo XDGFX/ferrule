@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw the README banner in light and dark, in the Instrument style (direction A of hailey#155).
+"""Draw the README artwork in light and dark, in the Instrument style.
 
 GitHub serves README images through <img>, which ignores web fonts and gives us no say over
 the page theme, so each theme is its own file with literal colours, picked by <picture>.
@@ -115,10 +115,67 @@ def banner(t):
     return "\n".join(o)
 
 
+def card(t, x, y, title, sub, w=196, h=64, accent=None):
+    o = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{t["card"]}" stroke="{t["line"]}"/>']
+    tx = x + 16
+    if accent:
+        o.append(f'<rect x="{x + 16}" y="{y + 17}" width="10" height="10" rx="2.5" fill="{accent}"/>')
+        tx = x + 33
+    o.append(f'<text x="{tx}" y="{y + 27}" font-family="{FONT}" font-size="15" font-weight="600" '
+             f'fill="{t["text"]}">{title}</text>')
+    o.append(f'<text x="{x + 16}" y="{y + 47}" font-family="{FONT}" font-size="12" '
+             f'fill="{t["muted"]}">{sub}</text>')
+    return o
+
+
+def run(t, pts, colour, width=4.5):
+    d = path(pts, 14)
+    case = t["case_wh"] if colour == WIRE["WH"] else t["casing"]
+    o = [f'<path d="{d}" fill="none" stroke="{case}" stroke-width="{width + 2.4}"/>',
+         f'<path d="{d}" fill="none" stroke="{colour}" stroke-width="{width}"/>']
+    for x, y in (pts[0], pts[-1]):
+        o.append(f'<circle cx="{x}" cy="{y}" r="3.6" fill="{t["card"]}" stroke="{t["muted"]}" stroke-width="1.3"/>')
+    return o
+
+
+def pipeline(t):
+    """How ferrule fits together: two readers into one model, one layout, SVG then PNG."""
+    W, H = 1284, 296
+    X = [24, 284, 544, 804, 1064]  # card columns, 196 wide with 64 between
+    top, bot, mid = 52, 180, 116   # card tops; centres at +32
+    ink = "#8e939b"
+    o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
+         f'role="img" aria-label="Pipeline: WireViz and pipeviz YAML are read into one model, laid out '
+         f'with elkjs, drawn as SVG and rasterised to PNG">',
+         f'<rect width="{W}" height="{H}" rx="18" fill="{t["bg"]}"/>']
+    # runs first, so the ports sit on top of them
+    o += run(t, [(X[0] + 196, top + 32), (X[1], top + 32)], WIRE["RD"])
+    o += run(t, [(X[0] + 196, bot + 32), (X[1], bot + 32)], COPPER, 8)
+    o += run(t, [(X[1] + 196, top + 32), (X[2] - 32, top + 32), (X[2] - 32, mid + 32), (X[2], mid + 32)], WIRE["RD"])
+    o += run(t, [(X[1] + 196, bot + 32), (X[2] - 32, bot + 32), (X[2] - 32, mid + 32), (X[2], mid + 32)], COPPER, 8)
+    o += run(t, [(X[2] + 196, mid + 32), (X[3], mid + 32)], ink)
+    o += run(t, [(X[3] + 196, mid + 32), (X[4] - 32, mid + 32), (X[4] - 32, top + 32), (X[4], top + 32)], ink)
+    o += run(t, [(X[4] + 98, top + 64), (X[4] + 98, bot)], ink)
+    o.append(f'<text x="{X[4] + 86}" y="{(top + 64 + bot) / 2 + 4}" text-anchor="end" font-family="{FONT}" font-size="12" '
+             f'fill="{t["muted"]}">flatten each theme</text>')
+
+    o += card(t, X[0], top, "WireViz YAML", "connectors, cables, links", accent="#ff8a1f")
+    o += card(t, X[0], bot, "pipeviz YAML", "pipes, fittings, tanks", accent=COPPER)
+    o += card(t, X[1], top, "Wiring reader", "pins, cores, gauges")
+    o += card(t, X[1], bot, "Plumbing reader", "runs, sizes, ratings")
+    o += card(t, X[2], mid, "Model", "one graph for both")
+    o += card(t, X[3], mid, "Layout", "elkjs, orthogonal routes")
+    o += card(t, X[4], top, "SVG", "light and dark, via CSS")
+    o += card(t, X[4], bot, "PNG", "resvg, one per theme")
+    o.append("</svg>")
+    return "\n".join(o)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for name, t in THEMES.items():
         (OUT / f"banner-{name}.svg").write_text(banner(t) + "\n")
+        (OUT / f"pipeline-{name}.svg").write_text(pipeline(t) + "\n")
 
 
 if __name__ == "__main__":

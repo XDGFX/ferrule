@@ -18,13 +18,12 @@
 
 ---
 
-ferrule replaces the Graphviz rendering behind [WireViz](https://github.com/wireviz/WireViz) and
-[pipeviz](https://github.com/XDGFX/pipeviz) for [Hailey](https://github.com/XDGFX/hailey), a
-campervan build documented in YAML. The YAML stays the contract. ferrule takes over the drawing.
+ferrule turns [WireViz](https://github.com/wireviz/WireViz) and
+[pipeviz](https://github.com/XDGFX/pipeviz) YAML into diagrams. Your existing files stay as they
+are. ferrule replaces the Graphviz step that draws them.
 
 > [!NOTE]
-> Nothing here runs yet. The look is settled and the layout spike is next. The plan, and every
-> decision so far, lives in [hailey#155](https://github.com/XDGFX/hailey/issues/155).
+> Nothing here runs yet. The look is settled, and the layout spike is next.
 
 ## Why
 
@@ -35,17 +34,17 @@ campervan build documented in YAML. The YAML stays the contract. ferrule takes o
   installed, so the same YAML renders differently on a laptop and a CI runner. ferrule bundles
   its font and measures text itself, so CI can diff SVGs byte for byte.
 - **Real dark mode.** SVGs carry CSS variables and `prefers-color-scheme`. PNGs come in light and
-  dark, because the GitHub mobile app shows PNGs but not SVGs.
+  dark, because some viewers, including the GitHub mobile app, show PNGs but not SVGs.
 - **Wiring and plumbing match.** One core, two readers.
 
 ## What it looks like
 
-The direction chosen in hailey#155 is called *Instrument*. Below is the heating loom, mocked up by
-hand before any layout engine existed.
+The style is called *Instrument*. Below is a heating loom, mocked up by hand before any layout
+engine existed.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/heating_systems-a-dark.svg">
-  <img alt="Heating loom: fuse panel, relay and three Cerbo inputs wired through a 7-core cable to a Deutsch DT connector" src="docs/assets/heating_systems-a-light.svg" width="100%">
+  <img alt="Heating loom: fuse panel, relay and three controller inputs wired through a 7-core cable to a Deutsch DT connector" src="docs/assets/heating_systems-a-light.svg" width="100%">
 </picture>
 
 <details>
@@ -53,7 +52,7 @@ hand before any layout engine existed.
 <br>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/main_electrical-a-dark.svg">
-  <img alt="Battery, isolator, BMS, SmartShunt and negative bus bar, with 50 and 25 mm² runs drawn heavier than the CAN cable" src="docs/assets/main_electrical-a-light.svg" width="100%">
+  <img alt="Battery, isolator, BMS, shunt and negative bus bar, with 50 and 25 mm² runs drawn heavier than the CAN cable" src="docs/assets/main_electrical-a-light.svg" width="100%">
 </picture>
 </details>
 
@@ -72,33 +71,24 @@ hand before any layout engine existed.
 
 ## How it fits together
 
-```mermaid
-flowchart LR
-  W["WireViz YAML<br><i>the subset Hailey uses</i>"] --> R1[wiring reader]
-  P["pipeviz YAML"] --> R2[plumbing reader]
-  R1 --> M((model))
-  R2 --> M
-  M --> L["layout<br><i>elkjs, layered,<br>fixed port order</i>"]
-  L --> S["SVG<br><i>CSS variables,<br>prefers-color-scheme</i>"]
-  S --> F["flattened SVG<br><i>one per theme</i>"]
-  F --> PNG["PNG<br><i>resvg</i>"]
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
+  <img alt="WireViz YAML and pipeviz YAML each go through their own reader into one shared model. The model is laid out with elkjs and drawn as SVG, which is flattened per theme and rasterised to PNG." src="docs/assets/pipeline-light.svg" width="100%">
+</picture>
 
-PNGs go through a flattened SVG because resvg can't resolve CSS variables. Each theme gets an SVG
-with literal colours, and that is what gets rasterised.
+Each reader handles one schema. Everything after the model is shared, so wiring and plumbing
+diagrams come out of the same layout and drawing code. PNGs go through a flattened copy of the
+SVG with literal colours, one per theme, because resvg can't resolve CSS variables.
 
-**Fallback:** if ELK's layouts turn out worse than dot's, ferrule keeps `dot -Tjson` for layout
-only and still draws everything itself. That keeps the look and dark mode, but output would no
-longer be identical across machines.
+**Fallback:** if ELK's layouts turn out worse than Graphviz's, ferrule keeps `dot -Tjson` for
+layout only and still draws everything itself. That keeps the look and dark mode, but output would
+no longer be identical across machines.
 
 ## Roadmap
 
-The steps follow [hailey#155](https://github.com/XDGFX/hailey/issues/155).
-
-- [x] **Bridge.** Freeze the WireViz fork at `hailey-v1`.
-- [x] **Look.** Hand-built mock-ups in three directions. *Instrument* was chosen after checking them on a phone.
-- [ ] **Layout spike.** Lay out Hailey's hardest diagram with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
-- [ ] **Parity.** Render all ten Hailey diagrams beside the old generator. Hailey switches over only once every one is correct, and CI then does a strict SVG diff.
+- [x] **Look.** Three style directions were built by hand and checked on a phone, and *Instrument* was chosen.
+- [ ] **Layout spike.** Lay out a large, dense loom with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
+- [ ] **Parity.** Render a full set of real diagrams beside the old WireViz output until every one is correct.
 - [ ] **New outputs.** Pinout tables per connector in Markdown, a cut list, and gauge checks against terminal and fuse limits.
 - [ ] **Plumbing.** Port pipeviz onto the same core.
 
@@ -108,10 +98,12 @@ The steps follow [hailey#155](https://github.com/XDGFX/hailey/issues/155).
 - Net highlighting, because it needs JavaScript and GitHub won't run it
 - Export to `.harness` or any other editor format
 
-## Used by
+## Origin
 
-[Hailey](https://github.com/XDGFX/hailey) pins ferrule by tag, as it does pipeviz. A ferrule
-release changes Hailey's diagrams only when Hailey bumps the tag.
+ferrule started on a campervan build that documents its 24 V system and plumbing in WireViz and
+pipeviz YAML. That project needed diagrams that read well on a phone in the van, a dark mode, and
+a CI check that the committed diagrams still match their YAML. Graphviz couldn't give it any of
+those.
 
-<sub>`docs/assets/` is generated. `scripts/make_readme_art.py` draws the banner, and the example
-diagrams come from Hailey's `electrical/docs/renderer-mockups/make_mockups.py --static`.</sub>
+<sub>`docs/assets/` is generated. `scripts/make_readme_art.py` draws the banner and the pipeline.
+The example diagrams are hand-built mock-ups made before the layout engine existed.</sub>
