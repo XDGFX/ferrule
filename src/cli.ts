@@ -2,9 +2,10 @@
 // Render WireViz looms in the Instrument style. Takes the same arguments as the fork's CLI where
 // the two overlap, so a project can switch by changing the command name.
 //
-//   ferrule [--prepend FILE]... [--format svg,png] [--output-dir DIR] LOOM.yml...
+//   ferrule [--prepend FILE]... [--format svg,png,md] [--output-dir DIR] LOOM.yml...
 //
 // Writes <loom>.svg, which follows the viewer's light or dark mode, and <loom>.png, rendered dark.
+// `md` adds <loom>.md, a cut list and a pinout for each connector, and is only written on request.
 
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -15,16 +16,17 @@ import { layoutElk } from "./layout/elk.ts";
 import { writeFonts } from "./measure.ts";
 import { flatten, render } from "./render.ts";
 import { buildSheet } from "./sheet.ts";
+import { tables } from "./tables.ts";
 import { readWireviz } from "./wireviz.ts";
 
-const FORMATS = ["svg", "png"] as const;
+const FORMATS = ["svg", "png", "md"] as const;
 type Format = (typeof FORMATS)[number];
 
 /** PNGs are for phones, where the dark theme reads best and where they get zoomed. */
 const PNG_THEME = "dark";
 const PNG_ZOOM = 2;
 
-const USAGE = "usage: ferrule [--prepend FILE]... [--format svg,png] [--output-dir DIR] LOOM.yml...";
+const USAGE = "usage: ferrule [--prepend FILE]... [--format svg,png,md] [--output-dir DIR] LOOM.yml...";
 
 async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -56,7 +58,13 @@ async function main(argv: string[]): Promise<number> {
       const out = values["output-dir"] ?? dirname(loom);
       mkdirSync(out, { recursive: true });
 
-      const sheet = buildSheet(readWireviz([...prepended, readFileSync(loom, "utf8")], name));
+      const harness = readWireviz([...prepended, readFileSync(loom, "utf8")], name);
+      if (formats.includes("md" satisfies Format)) writeFileSync(join(out, `${name}.md`), tables(harness));
+      if (!formats.some((f) => f !== "md")) {
+        console.log(`${loom} → ${join(out, `${name}.md`)}`);
+        continue;
+      }
+      const sheet = buildSheet(harness);
       const svg = await render(sheet, await layoutElk(sheet));
       if (formats.includes("svg" satisfies Format)) writeFileSync(join(out, `${name}.svg`), svg + "\n");
       if (formats.includes("png" satisfies Format)) {

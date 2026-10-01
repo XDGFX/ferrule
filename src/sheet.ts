@@ -163,7 +163,7 @@ function cableSpec(c: Cable): string {
   return [c.gauge == null ? "" : `${fmt(c.gauge)} mm²`, c.length].filter(Boolean).join(" · ");
 }
 
-function fmt(n: number): string {
+export function fmt(n: number): string {
   return String(Number(n.toFixed(2)));
 }
 
@@ -172,7 +172,7 @@ function fmt(n: number): string {
  * `REAR_LIGHT · 2`, so two of the same part can be told apart. A part drawn once is just its
  * template.
  */
-function displayName(id: string, template: string, repeated: Set<string>): string {
+export function displayName(id: string, template: string, repeated: Set<string>): string {
   const m = /^__.+_(\d+)$/.exec(id);
   if (!m) return id;
   return repeated.has(template) ? `${template} · ${m[1]}` : template;

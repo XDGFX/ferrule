@@ -36,7 +36,9 @@ npx ferrule --prepend shared.yml --output-dir diagrams src/*.yml
 
 The arguments match WireViz's CLI where the two overlap. Each loom gives `<name>.svg`, which
 follows the viewer's light or dark mode, and `<name>.png`, rendered dark. `--format svg` or
-`--format png` writes one of the two.
+`--format png` writes one of the two. Adding `md`, as in `--format svg,png,md`, also writes
+`<name>.md`: a cut list of every core, with its size, length and both ends, and a pinout table
+for each connector. GitHub renders both tables on a phone.
 
 **WireViz syntax read:** prepended files with cross-file anchors and `<<` merges; `pinlabels`,
 `pincount`, `pincolors`, `loops` and `style: simple` on connectors; `colors`, `wirelabels`,
