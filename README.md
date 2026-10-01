@@ -57,6 +57,12 @@ an error. ferrule is a little stricter: only a pipe may carry `^`, a chain turns
 a pipe takes no instance. Legacy `edges` and pipeviz's `--combined` sheet are not read. The
 `md` tables are written for wiring and read poorly for plumbing.
 
+**Agent skill:** `skills/ferrule` teaches a coding agent to write both dialects within the
+subset ferrule reads, and to render and commit the result. Install it with
+`npx skills add xdgfx/ferrule@ferrule`, or symlink the folder into `~/.claude/skills/`. When
+what a reader accepts changes, update its reference in `skills/ferrule/references/` in the same
+change.
+
 **Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
 loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate
 or loop.
