@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { hex } from "../src/colours.ts";
 import { readPipeviz } from "../src/pipeviz.ts";
 import type { Harness } from "../src/model.ts";
 
@@ -107,6 +108,8 @@ test("makes each pipe usage its own run, coloured by service and weighted by bor
   );
   const loop = read(`${plan}  - - tank.a:LOW\n    - loop\n    - tank.b:LOW\n`).cables.find((c) => c.template === "loop")!;
   assert.deepEqual([loop.bore, loop.wires[0].colours], [19.05, ["#f97316"]]);
+  const lower = read(plan.replace('color: "#f97316"', "color: og") + "  - - tank.a:LOW\n    - loop\n    - tank.b:LOW\n").cables.find((c) => c.template === "loop")!;
+  assert.deepEqual([lower.wires[0].colours, lower.accent], [["OG"], hex("OG")]);
 });
 
 test("links each hop, defaulting an omitted port to the first and joining parts that mate directly", () => {
@@ -141,6 +144,7 @@ test("rejects what pipeviz rejects", () => {
   assert.throws(bad("  - [adapter.:A, tank]\n"), /simple/);
   assert.throws(bad("  - ['tee:[A,B]', tank]\n"), /one port/);
   assert.throws(bad("  - [tee:A, loop^, tank.a, loop^, tank.b]\n"), /once/);
+  assert.throws(bad("  - [tee:A, hose.x, tank]\n"), /no instance/);
   assert.throws(() => read(`components:\n  x:\n    ports: [A]\nconnections:\n  - [x, x.b]\n`, []), /label/);
   assert.throws(() => read(`components:\n  x:\n    label: X\nconnections:\n  - [x, x.b]\n`, []), /ports or portcount/);
   assert.throws(() => read(`components:\n  x:\n    label: X\n    ports: [A]\n    portcount: 2\nconnections:\n  - [x, x.b]\n`, []), /portcount/);

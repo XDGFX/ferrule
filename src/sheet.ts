@@ -298,13 +298,13 @@ function wrapTitle(title: string, max: number): string[] {
   return wrap([title.replace(/ · /g, "\u00a0·\u00a0")], max, STYLE.titleSize, 600).map((l) => l.replace(/\u00a0/g, " "));
 }
 
-function wrap(texts: string[], max: number, size: number, weight = 400): string[] {
+function wrap(texts: string[], max: number, size: number, fontWeight = 400): string[] {
   const out: string[] = [];
   for (const text of texts) {
     let line = "";
     for (const word of text.split(/[ \t\n\r]+/)) {
       const next = line ? `${line} ${word}` : word;
-      if (line && textWidth(next, size, weight) > max) {
+      if (line && textWidth(next, size, fontWeight) > max) {
         out.push(line);
         line = word;
       } else line = next;

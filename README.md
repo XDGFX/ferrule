@@ -52,8 +52,10 @@ else is ignored, or is an error if it changes what connects to what.
 `simple` fittings; `component:port`, `component.name` and fresh `component.` instances; ports by
 name or number, defaulting to the first; and `pipe^`, which turns the chain round. Each pipe in
 a chain is a fresh run, coloured by its `colour` or `service_rating` and weighted by its `size`.
-Chains are checked as pipeviz checks them: an unknown name, port or pipe next to a pipe is an
-error. Legacy `edges` and pipeviz's `--combined` sheet are not read.
+Chains are checked against pipeviz's rules: an unknown name or port, or a pipe next to a pipe, is
+an error. ferrule is a little stricter: only a pipe may carry `^`, a chain turns round once, and
+a pipe takes no instance. Legacy `edges` and pipeviz's `--combined` sheet are not read. The
+`md` tables are written for wiring and read poorly for plumbing.
 
 **Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
 loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate

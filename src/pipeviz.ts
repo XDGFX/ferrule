@@ -57,8 +57,8 @@ export function readPipeviz(sources: string[], name: string): Harness {
 
   function run(template: string, def: Yaml): Cable {
     const id = template ? `__${template}_${++runs}` : `=${++runs}`;
-    const colour = def.colour ?? def.color;
-    const colours = colour ? (String(colour).startsWith("#") ? [String(colour)] : stripes(String(colour).toUpperCase())) : SERVICE[def.service_rating] ? [SERVICE[def.service_rating]] : [];
+    const colour = colourOf(def) ?? SERVICE[def.service_rating];
+    const colours = colour ? stripes(colour) : [];
     const cable: Cable = {
       id,
       template,
@@ -68,7 +68,7 @@ export function readPipeviz(sources: string[], name: string): Harness {
       label: def.label == null ? "" : String(def.label),
       length: def.length == null ? "" : String(def.length),
       wires: [{ index: 1, label: "", code: "", colours }],
-      accent: hex(colour ?? SERVICE[def.service_rating]),
+      accent: hex(colour),
       notes: lines(def.description),
     };
     cables.push(cable);
@@ -149,7 +149,10 @@ function token(text: string, defs: Map<string, Yaml>, pipes: Yaml): Token {
   const base = dot < 0 ? head : head.slice(0, dot);
   const instance = dot < 0 ? null : head.slice(dot + 1);
   if (defs.has(base)) return { base, instance, port, reversed, pipe: false };
-  if (base in pipes) return { base, instance: null, port, reversed, pipe: true };
+  if (base in pipes) {
+    if (instance != null) throw new Error(`${text}: every use of a pipe is already its own run, so it takes no instance`);
+    return { base, instance: null, port, reversed, pipe: true };
+  }
   throw new Error(`${text}: no component or pipe is defined as ${base}`);
 }
 
@@ -182,7 +185,7 @@ function component(id: string, template: string, label: string, def: Yaml): Conn
         }),
     simple: !!def.simple,
     loops: [],
-    accent: hex(def.color ?? def.colour),
+    accent: hex(colourOf(def)),
     notes: lines(def.description),
   };
 }
@@ -250,6 +253,14 @@ export function bore(size: unknown): number | null {
   const [, whole, num, den, dec] = inch;
   const n = (whole ? Number(whole) : 0) + (dec ? Number(dec) : Number(num) / Number(den));
   return Math.round(n * 25.4 * 100) / 100;
+}
+
+/** A part's or pipe's own colour, as hex or an upper-case colour code, when it has one. */
+function colourOf(def: Yaml): string | undefined {
+  const c = def.colour ?? def.color;
+  if (c == null || c === "") return undefined;
+  const s = String(c);
+  return s.startsWith("#") ? s : s.toUpperCase();
 }
 
 function lines(text: unknown): string[] {
