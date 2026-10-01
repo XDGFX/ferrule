@@ -167,7 +167,7 @@ function drawSwatch(x: number, cy: number, colours: string[]): string[] {
   const size = 8;
   const y = cy - size / 2;
   const [a, b] = colours;
-  const kase = a === "WH" ? "case-wh" : "casing";
+  const kase = `casing${casing(a)}`;
   const o = [`<rect class="${kase}" x="${n(x)}" y="${n(y)}" width="${size}" height="${size}" rx="2" stroke-width="1" style="fill:${coreColour(a)}"/>`];
   if (b) o.push(`<path d="M${n(x + size)},${n(y)} V${n(y + size)} H${n(x)} Z" style="fill:${coreColour(b)}"/>`);
   return o;
@@ -200,6 +200,11 @@ function drawLoop(c: Card, p: Pt, [a, b]: [string, string]): string[] {
   ];
 }
 
+/** The extra casing class for a black or white core, which each theme outlines in its own colour. */
+function casing(code: string): string {
+  return code === "BK" ? " case-bk" : code === "WH" ? " case-wh" : "";
+}
+
 /** A core's stroke. Black and white follow the theme, so neither matches the ground it's drawn on. */
 function coreColour(code: string): string {
   if (code === "BK") return "var(--core-bk)";
@@ -209,7 +214,7 @@ function coreColour(code: string): string {
 
 function drawWire(d: string, w: Wire): string[] {
   const [c1, c2] = w.colours;
-  const kase = c1 === "BK" ? " case-bk" : c1 === "WH" ? " case-wh" : "";
+  const kase = casing(c1);
   const o = [
     `<path class="casing${kase}" d="${d}" stroke-width="${n(w.weight + 2 * CASING)}"/>`,
     `<path class="core" d="${d}" style="stroke:${coreColour(c1)}" stroke-width="${n(w.weight)}"/>`,

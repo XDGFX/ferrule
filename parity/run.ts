@@ -65,7 +65,7 @@ for (const loom of looms) {
   const fork: Dump = JSON.parse(
     execFileSync(values.python!, [new URL("wireviz_dump.py", import.meta.url).pathname, `${dir}/shared.yml`, src], {
       encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "inherit"],
     }),
   );
   const ours = lines(fromFerrule(readWireviz([shared, readFileSync(src, "utf8")], loom)));

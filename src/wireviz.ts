@@ -134,6 +134,7 @@ function connector(id: string, template: string, def: Yaml): Connector {
   const labels: string[] = (def.pinlabels ?? []).map(String);
   const marks: string[] = (def.pincolors ?? []).map((c: unknown) => (c == null ? "" : String(c)));
   const count = simple ? 1 : Number(def.pincount ?? 0) || Math.max(labels.length, marks.length);
+  if (labels.length > count) throw new Error(`${id}: ${labels.length} pin labels for ${count} pin(s)`);
   return {
     id,
     template,
@@ -144,9 +145,14 @@ function connector(id: string, template: string, def: Yaml): Connector {
       label: labels[i] ?? "",
       colours: marks[i] ? stripes(marks[i]) : [],
     })),
+    // The fork takes loop pins by number only, and rejects one the connector doesn't have.
     loops: (def.loops ?? []).map((pair: unknown[]) => {
       if (pair.length !== 2) throw new Error(`${id}: a loop joins exactly two pins`);
-      return [String(pair[0]), String(pair[1])];
+      const ends = pair.map(String) as [string, string];
+      for (const end of ends) {
+        if (!(Number(end) >= 1 && Number(end) <= count)) throw new Error(`${id}: no loop pin ${end}`);
+      }
+      return ends;
     }),
     simple,
     accent: hex(def.bgcolor_title ?? def.bgcolor),

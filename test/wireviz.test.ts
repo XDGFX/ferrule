@@ -210,3 +210,13 @@ test("a bare fresh name repeated down a set is a new instance on every row, as i
   const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\n  B:\n    pincount: 1\ncables:\n  ONE:\n    wirecount: 1\nconnections:\n  -\n    - A: [X, Y]\n    - ONE.: [1, 1]\n    - B.\n`;
   assert.deepEqual(readWireviz([src], "x").connectors.map((c) => c.id), ["A", "__B_1", "__B_2"]);
 });
+
+test("a loop on a pin the connector doesn't have is an error, as in the fork", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\n    loops: [[1, 3]]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - A: [X]\n    - W: [1]\n`;
+  assert.throws(() => readWireviz([src], "x"), /A.*loop pin 3/);
+});
+
+test("more pin labels than pincount is an error, not dropped labels", () => {
+  const src = `connectors:\n  A:\n    pincount: 1\n    pinlabels: ["X", "Y"]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - A: [X]\n    - W: [1]\n`;
+  assert.throws(() => readWireviz([src], "x"), /A.*2 pin labels.*1 pin/);
+});

@@ -113,8 +113,7 @@ export function buildSheet(h: Harness): Sheet {
     const c = cables.get(l.cable)!;
     const core = c.wires[l.wire - 1];
     const base = { colours: core.colours.length ? core.colours : ["GY"], weight: weight(c.gauge) };
-    if (isRun(c)) {
-      if (!l.from || !l.to) throw new Error(`${c.id}: a run needs both ends`);
+    if (isRun(c) && l.from && l.to) {
       wires.push({
         id: `w${i}`,
         from: touch(l.from.connector, l.from.pin, "E"),
