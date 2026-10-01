@@ -17,12 +17,13 @@ export const ELK_OPTIONS: Record<string, string> = {
   "elk.randomSeed": "1",
   "elk.padding": "[top=24,left=24,bottom=24,right=24]",
   "elk.spacing.nodeNode": "36",
-  "elk.spacing.edgeEdge": "14",
+  // Parallel wires need room to be told apart, especially black ones on the dark theme.
+  "elk.spacing.edgeEdge": "20",
   "elk.spacing.edgeNode": "20",
   "elk.spacing.edgeLabel": "4",
   "elk.layered.spacing.nodeNodeBetweenLayers": "64",
   "elk.layered.spacing.edgeNodeBetweenLayers": "24",
-  "elk.layered.spacing.edgeEdgeBetweenLayers": "14",
+  "elk.layered.spacing.edgeEdgeBetweenLayers": "20",
   "elk.edgeLabels.inline": "true",
   "elk.edgeLabels.placement": "CENTER",
   "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
@@ -31,7 +32,23 @@ export const ELK_OPTIONS: Record<string, string> = {
   "elk.layered.thoroughness": "40",
 };
 
+/** Wider than this, a sheet is wrapped into rows: a long chain is unreadable on a phone. */
+export const WRAP_ABOVE = 2.2;
+
+/** Wrapping options. Applied only past WRAP_ABOVE, because it adds crossings to a sheet that fits. */
+export const WRAP_OPTIONS: Record<string, string> = {
+  "elk.layered.wrapping.strategy": "MULTI_EDGE",
+  "elk.aspectRatio": "1.6",
+};
+
+/** Lay out a sheet, wrapping it into rows if it comes out too wide to read on a phone. */
 export async function layoutElk(sheet: Sheet, options: Record<string, string> = {}): Promise<Placement> {
+  const flat = await layoutOnce(sheet, options);
+  if (flat.width / flat.height <= WRAP_ABOVE) return flat;
+  return layoutOnce(sheet, { ...WRAP_OPTIONS, ...options });
+}
+
+async function layoutOnce(sheet: Sheet, options: Record<string, string>): Promise<Placement> {
   const graph: ElkNode = {
     id: "root",
     layoutOptions: { ...ELK_OPTIONS, ...options },

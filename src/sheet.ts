@@ -18,6 +18,7 @@ export const STYLE = {
   rowSize: 11.5,
   noteSize: 10,
   noteLh: 14,
+  subLh: 13,
   tagSize: 10,
   tagH: 17,
   foldFrom: 3,
@@ -48,7 +49,8 @@ export interface Card {
   id: string;
   kind: "connector" | "simple" | "cable";
   title: string;
-  sub: string;
+  /** Type and subtype, wrapped to the card. */
+  subLines: string[];
   accent: string;
   w: number;
   h: number;
@@ -164,11 +166,13 @@ function fmt(n: number): string {
 
 function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>): Card {
   const sub = [c.type, c.subtype].filter(Boolean).join(" · ");
+  const title = c.id.startsWith("__") ? c.template : c.id;
   if (c.simple) {
-    const w = width([textWidth(c.id, STYLE.titleSize, 600) + 40, textWidth(sub, STYLE.subSize) + 24]);
-    const card = base(c.id, "simple", c.id, sub, c.accent, w, [], []);
-    card.h = STYLE.simpleH;
-    card.ports = ports(used, card, () => STYLE.simpleH / 2);
+    const w = width([textWidth(title, STYLE.titleSize, 600) + 40, textWidth(sub, STYLE.subSize) + 24]);
+    const card = base(c.id, "simple", title, sub, c.accent, w, [], []);
+    card.subLines = wrap([sub], w - 24, STYLE.subSize);
+    card.h = STYLE.simpleH + extraSubLines(card) * STYLE.subLh;
+    card.ports = ports(used, card, () => card.h / 2);
     return card;
   }
   const rows: Row[] = [];
@@ -189,7 +193,7 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<st
     } else run.push(row);
   }
   flush();
-  const card = base(c.id, "connector", c.id, sub, c.accent, 0, rows, c.notes);
+  const card = base(c.id, "connector", title, sub, c.accent, 0, rows, c.notes);
   card.loops = c.loops;
   return finish(card, used);
 }
@@ -202,19 +206,29 @@ function cableCard(c: Cable, used: Map<string, Set<Side>>): Card {
 }
 
 function base(id: string, kind: Card["kind"], title: string, sub: string, accent: string, w: number, rows: Row[], notes: string[]): Card {
-  return { id, kind, title, sub, accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
+  return { id, kind, title, subLines: sub ? [sub] : [], accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
+}
+
+/** Subtitle lines beyond the first, each of which deepens the header. */
+function extraSubLines(card: Card): number {
+  return Math.max(0, card.subLines.length - 1);
 }
 
 function finish(card: Card, used: Map<string, Set<Side>>): Card {
   const s = STYLE;
   const swatch = card.rows.some((r) => r.colours) ? s.swatchW : 0;
+  const notes = paragraphs(card.notes);
+  // Notes may widen a card up to its limit, so they wrap less and the card stays shorter.
   card.w = width([
     textWidth(card.title, s.titleSize, 600) + 28 + s.pad,
-    textWidth(card.sub, s.subSize) + 2 * s.pad,
+    ...card.subLines.map((l) => textWidth(l, s.subSize) + 2 * s.pad),
     ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1, 400, true) + 2 * s.pad : s.numW + 8 + swatch + textWidth(r.label, s.rowSize) + 34)),
+    ...notes.map((n) => textWidth(n, s.noteSize) + 2 * s.pad),
   ]);
-  card.notes = wrap(card.notes, card.w - 2 * s.pad);
-  card.h = s.headH + card.rows.length * s.rowH + (card.notes.length ? 10 + card.notes.length * s.noteLh : 0);
+  card.subLines = wrap(card.subLines, card.w - 2 * s.pad, s.subSize);
+  card.notes = wrap(notes, card.w - 2 * s.pad, s.noteSize);
+  card.rowTop = s.headH + extraSubLines(card) * s.subLh;
+  card.h = card.rowTop + card.rows.length * s.rowH + (card.notes.length ? 10 + card.notes.length * s.noteLh : 0);
   card.ports = ports(used, card, (key) => {
     if (key === "mate") return card.rowTop / 2;
     const i = card.rows.findIndex((r) => r.key === key);
@@ -237,13 +251,26 @@ function width(candidates: number[]): number {
   return Math.min(STYLE.maxW, Math.ceil(w / 2) * 2);
 }
 
-function wrap(notes: string[], max: number): string[] {
+/**
+ * Source lines rejoined into paragraphs. A YAML note is often wrapped by hand, and wrapping it
+ * again line by line leaves orphans; a line starting with a bullet or a number starts a new one.
+ */
+function paragraphs(lines: string[]): string[] {
   const out: string[] = [];
-  for (const note of notes) {
+  for (const line of lines) {
+    if (out.length && !/^([-*•]|\d+[.)])\s/.test(line)) out[out.length - 1] += ` ${line}`;
+    else out.push(line);
+  }
+  return out;
+}
+
+function wrap(texts: string[], max: number, size: number): string[] {
+  const out: string[] = [];
+  for (const text of texts) {
     let line = "";
-    for (const word of note.split(/\s+/)) {
+    for (const word of text.split(/\s+/)) {
       const next = line ? `${line} ${word}` : word;
-      if (line && textWidth(next, STYLE.noteSize) > max) {
+      if (line && textWidth(next, size) > max) {
         out.push(line);
         line = word;
       } else line = next;

@@ -10,12 +10,15 @@ import subsetFont from "subset-font";
 
 const require = createRequire(import.meta.url);
 
-/** The faces the Instrument style draws with. Fold rows are the one italic. */
+/**
+ * The faces the Instrument style draws with, by their file in inter-ui. Fold rows are the one
+ * italic. These are the full faces, not a Latin subset, so Ω and → are there to draw.
+ */
 export const FACES = [
-  { weight: 400, style: "normal" },
-  { weight: 500, style: "normal" },
-  { weight: 600, style: "normal" },
-  { weight: 400, style: "italic" },
+  { weight: 400, style: "normal", file: "Inter-Regular" },
+  { weight: 500, style: "normal", file: "Inter-Medium" },
+  { weight: 600, style: "normal", file: "Inter-SemiBold" },
+  { weight: 400, style: "italic", file: "Inter-Italic" },
 ] as const;
 
 type Face = (typeof FACES)[number];
@@ -28,10 +31,10 @@ interface Loaded {
   upem: number;
 }
 
-// Converted once at load: HarfBuzz and resvg both need TrueType, and @fontsource ships WOFF2.
+// Converted once at load: HarfBuzz and resvg both need TrueType, and inter-ui ships WOFF2.
 const loaded = new Map<string, Loaded>();
 for (const f of FACES) {
-  const woff2 = readFileSync(require.resolve(`@fontsource/inter/files/inter-latin-${f.weight}-${f.style}.woff2`));
+  const woff2 = readFileSync(require.resolve(`inter-ui/web/${f.file}.woff2`));
   const ttf: Buffer = await fontverter.convert(woff2, "truetype");
   const face = new hb.Face(new hb.Blob(ttf));
   loaded.set(key(f.weight, f.style), { woff2, ttf, font: new hb.Font(face), upem: face.upem });
