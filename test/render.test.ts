@@ -52,3 +52,13 @@ test("flattening leaves no CSS variable for a rasteriser to miss", async () => {
     assert.doesNotMatch(flat, /prefers-color-scheme/);
   }
 });
+
+test("a mated pair is laid out side by side, so a wrap can't separate them", async () => {
+  const src = `connectors:\n  P:\n    pinlabels: ["A", "B"]\n  S:\n    pinlabels: ["A", "B"]\n  X:\n    pinlabels: ["A", "B"]\n  Y:\n    pinlabels: ["A", "B"]\ncables:\n  C:\n    wirecount: 2\nconnections:\n  -\n    - X: [A, B]\n    - C.: [1, 2]\n    - P: [A, B]\n  -\n    - P\n    - [==]\n    - S\n  -\n    - S: [A, B]\n    - C.: [1, 2]\n    - Y: [A, B]\n`;
+  const sheet = buildSheet(readWireviz([src], "x"));
+  const place = await layoutElk(sheet);
+  const p = place.cards.get("P")!, s = place.cards.get("S")!;
+  const pw = sheet.cards.find((c) => c.id === "P")!.w;
+  assert.equal(p.y, s.y);
+  assert.ok(s.x > p.x + pw && s.x - (p.x + pw) < 80);
+});

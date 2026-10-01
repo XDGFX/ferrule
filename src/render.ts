@@ -12,8 +12,9 @@ import { STYLE as S, tagWidth, type Card, type Sheet, type Wire } from "./sheet.
 export const THEMES = {
   light: {
     bg: "#eef0f3", card: "#ffffff", line: "#d5d9df", text: "#1b1f24", muted: "#5e6670", faint: "#9aa1aa",
-    casing: "#7f8792", "case-bk": "#7f8792", "case-wh": "#4c535d", "tag-bg": "#ffffff",
-    "core-bk": WIRE.BK, "core-wh": WIRE.WH,
+    casing: "#7f8792", "case-bk": "#7f8792", "case-wh": "#5e6670", "tag-bg": "#ffffff",
+    // A pure white core on the light ground reads as a hollow outline; a pale grey reads as filled.
+    "core-bk": WIRE.BK, "core-wh": "#dde0e5",
   },
   dark: {
     bg: "#121418", card: "#1c1f25", line: "#323741", text: "#e8eaed", muted: "#9aa1ab", faint: "#626a75",
@@ -46,7 +47,7 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .core{fill:none;stroke-linejoin:round}
 .tag{fill:var(--tag-bg);stroke:var(--line);stroke-width:1}
 .port{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
-.chip{stroke:var(--line);stroke-width:1}
+.chip{stroke:var(--faint);stroke-width:1}
 .mate{fill:none;stroke:var(--muted);stroke-linecap:round;stroke-linejoin:round}
 .cap{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round}`;
 
@@ -180,11 +181,17 @@ function drawMate(d: string): string[] {
 /** A bridge between two pins of one connector, drawn as a short grey wire looping off its side. */
 function drawLoop(c: Card, p: Pt, [a, b]: [string, string]): string[] {
   const rowY = (key: string) => p.y + c.rowTop + c.rows.findIndex((r) => r.key === key) * c.rowH + c.rowH / 2;
-  // Loop off whichever side has no wire on either pin, preferring the east.
+  // Loop off whichever side has no wire on either pin, preferring the east. With wires on both
+  // sides, the loop is a bracket inside the card's left margin instead, clear of every wire.
   const busy = (side: string) => c.ports.some((q) => q.side === side && (q.id === `${a}:${side}` || q.id === `${b}:${side}`));
-  const east = !busy("E") || busy("W");
-  const x = east ? p.x + c.w : p.x;
-  const out = east ? x + 14 : x - 14;
+  const inside = busy("E") && busy("W");
+  const east = !busy("E");
+  const x = inside ? p.x + 5 : east ? p.x + c.w : p.x;
+  const out = inside ? p.x + 2 : east ? x + 14 : x - 14;
+  if (inside) {
+    const d = `M${n(x)},${n(rowY(a))} L${n(out)},${n(rowY(a))} L${n(out)},${n(rowY(b))} L${n(x)},${n(rowY(b))}`;
+    return [`<path class="core" d="${d}" style="stroke:${WIRE.GY}" stroke-width="1.6"/>`];
+  }
   const pts = [{ x, y: rowY(a) }, { x: out, y: rowY(a) }, { x: out, y: rowY(b) }, { x, y: rowY(b) }];
   const wire: Wire = { id: "loop", from: { card: c.id, port: a }, to: { card: c.id, port: b }, colours: ["GY"], weight: 2.5 };
   return [
