@@ -7,7 +7,7 @@
 
 <p align="center">
   <b>A diagram renderer for looms and pipe runs.</b><br>
-  It reads the YAML you already have, lays out the result itself, and draws it in a style it owns.
+  Describe connectors, cables and pipe runs in YAML. ferrule lays them out and draws them.
 </p>
 
 <p align="center">
@@ -18,24 +18,25 @@
 
 ---
 
-ferrule turns [WireViz](https://github.com/wireviz/WireViz) and
-[pipeviz](https://github.com/XDGFX/pipeviz) YAML into diagrams. Your existing files stay as they
-are. ferrule replaces the Graphviz step that draws them.
+ferrule takes one YAML format for both wiring and plumbing and turns it into diagrams. It does
+its own layout and drawing, so the output looks the same everywhere and works in dark mode.
+
+Coming from WireViz? The format will feel familiar, and ferrule keeps compatibility where it can.
 
 > [!NOTE]
 > Nothing here runs yet. The look is settled, and the layout spike is next.
 
 ## Why
 
-- **One look, controlled here.** Graphviz has no CSS and no per-corner radii. It can't outline
-  a black wire on a dark ground, draw a tracer on a two-colour wire, or route filleted orthogonal
-  wires out of table ports.
-- **The same bytes on every machine.** Graphviz measures text with whatever fonts happen to be
-  installed, so the same YAML renders differently on a laptop and a CI runner. ferrule bundles
-  its font and measures text itself, so CI can diff SVGs byte for byte.
+- **One look, controlled here.** ferrule doesn't hand drawing to Graphviz, which has no CSS and
+  no per-corner radii. Graphviz can't outline a black wire on a dark ground, draw a tracer on a
+  two-colour wire, or route filleted orthogonal wires out of table ports.
+- **The same bytes on every machine.** Graphviz-based tools measure text with whatever fonts
+  happen to be installed, so the same YAML renders differently on a laptop and a CI runner.
+  ferrule bundles its font and measures text itself, so CI can diff SVGs byte for byte.
 - **Real dark mode.** SVGs carry CSS variables and `prefers-color-scheme`. PNGs come in light and
   dark, because some viewers, including the GitHub mobile app, show PNGs but not SVGs.
-- **Wiring and plumbing match.** One core, two readers.
+- **Wiring and plumbing match.** One format and one renderer cover both.
 
 ## What it looks like
 
@@ -73,12 +74,12 @@ engine existed.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="WireViz YAML and pipeviz YAML each go through their own reader into one shared model. The model is laid out with elkjs and drawn as SVG, which is flattened per theme and rasterised to PNG." src="docs/assets/pipeline-light.svg" width="100%">
+  <img alt="Wiring and plumbing are described in one YAML format, read into one shared model, laid out with elkjs and drawn as SVG, which is flattened per theme and rasterised to PNG." src="docs/assets/pipeline-light.svg" width="100%">
 </picture>
 
-Each reader handles one schema. Everything after the model is shared, so wiring and plumbing
-diagrams come out of the same layout and drawing code. PNGs go through a flattened copy of the
-SVG with literal colours, one per theme, because resvg can't resolve CSS variables.
+Wiring and plumbing share one format and one model, so both come out of the same layout and
+drawing code. PNGs go through a flattened copy of the SVG with literal colours, one per theme,
+because resvg can't resolve CSS variables.
 
 **Fallback:** if ELK's layouts turn out worse than Graphviz's, ferrule keeps `dot -Tjson` for
 layout only and still draws everything itself. That keeps the look and dark mode, but output would
@@ -88,9 +89,9 @@ no longer be identical across machines.
 
 - [x] **Look.** Three style directions were built by hand and checked on a phone, and *Instrument* was chosen.
 - [ ] **Layout spike.** Lay out a large, dense loom with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
-- [ ] **Parity.** Render a full set of real diagrams beside the old WireViz output until every one is correct.
+- [ ] **Parity.** Render a full set of real looms until every one is correct, then compare them byte for byte in CI.
 - [ ] **New outputs.** Pinout tables per connector in Markdown, a cut list, and gauge checks against terminal and fuse limits.
-- [ ] **Plumbing.** Port pipeviz onto the same core.
+- [ ] **Plumbing.** Pipe runs, fittings and tanks on the same core.
 
 ## Not planned
 
@@ -100,10 +101,9 @@ no longer be identical across machines.
 
 ## Origin
 
-ferrule started on a campervan build that documents its 24 V system and plumbing in WireViz and
-pipeviz YAML. That project needed diagrams that read well on a phone in the van, a dark mode, and
-a CI check that the committed diagrams still match their YAML. Graphviz couldn't give it any of
-those.
+ferrule started on a campervan build that documents its 24 V system and plumbing in YAML. That
+project needed diagrams that read well on a phone in the van, a dark mode, and a CI check that the
+committed diagrams still match their YAML. Graphviz couldn't give it any of those.
 
 <sub>`docs/assets/` is generated. `scripts/make_readme_art.py` draws the banner and the pipeline.
 The example diagrams are hand-built mock-ups made before the layout engine existed.</sub>

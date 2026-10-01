@@ -34,10 +34,19 @@ def path(pts, r=16):
     return " ".join(d)
 
 
+def fade_mask(name, x0, x1, W, H):
+    """Fade in from transparent at x0 to opaque at x1."""
+    return (f'<linearGradient id="g-{name}" gradientUnits="userSpaceOnUse" x1="{x0}" x2="{x1}" y1="0" y2="0">'
+            f'<stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/>'
+            f'</linearGradient><mask id="fade-{name}" maskUnits="userSpaceOnUse" x="0" y="0" '
+            f'width="{W}" height="{H}"><rect width="{W}" height="{H}" fill="url(#g-{name})"/></mask>')
+
+
 def banner(t):
     W, H = 1280, 420
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
          f'role="img" aria-label="ferrule: wiring and plumbing diagrams from YAML">',
+         f'<defs>{fade_mask("wires", 640, 730, W, H)}{fade_mask("pipe", 692, 830, W, H)}</defs>',
          f'<rect width="{W}" height="{H}" rx="18" fill="{t["bg"]}"/>']
 
     # Wordmark
@@ -78,6 +87,7 @@ def banner(t):
     wires = [(104, 900, "RD", None), (146, 850, "WH", None), (232, 780, "GN", "YE"),
              (296, 820, "YE", None), (338, 870, "BK", None)]
     fx = cx - 34  # where the ferrule sleeve starts
+    o.append('<g mask="url(#fade-wires)">')
     for (sy, lane, c1, c2), py in zip(wires, ports):
         d = path([(640, sy), (lane, sy), (lane, py), (fx, py)])
         case = t["case_bk"] if c1 == "BK" else t["case_wh"] if c1 == "WH" else t["casing"]
@@ -92,13 +102,11 @@ def banner(t):
                  f'stroke="{t["casing"]}"/>')
         o.append(f'<circle cx="{cx}" cy="{py}" r="3.6" fill="{t["card"]}" stroke="{t["muted"]}" '
                  f'stroke-width="1.3"/>')
-        # fade the wire in from the wordmark side
-    o.append(f'<defs><linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="{t["bg"]}"/>'
-             f'<stop offset="1" stop-color="{t["bg"]}" stop-opacity="0"/></linearGradient></defs>')
-    o.append(f'<rect x="636" y="90" width="90" height="260" fill="url(#fade)"/>')
+    o.append("</g>")
 
     # Plumbing: a copper run with a compression fitting, ferrule (olive) visible at the nut.
     py = 372
+    o.append('<g mask="url(#fade-pipe)">')
     o.append(f'<path d="M700,{py} H1224" stroke="{t["casing"]}" stroke-width="14" stroke-linecap="round"/>')
     o.append(f'<path d="M700,{py} H1224" stroke="{COPPER}" stroke-width="11" stroke-linecap="round"/>')
     for x in (930, 1010):
@@ -110,7 +118,7 @@ def banner(t):
     o.append(f'<rect x="964" y="{py - 11}" width="46" height="22" rx="2" fill="{BRASS}" stroke="{t["casing"]}"/>')
     o.append(f'<path d="M922,{py - 8} l8,-3 v22 l-8,-3 Z M1052,{py - 8} l-8,-3 v22 l8,-3 Z" fill="#e2c27a" '
              f'stroke="{t["casing"]}"/>')
-    o.append(f'<rect x="700" y="{py - 12}" width="120" height="24" fill="url(#fade)"/>')
+    o.append("</g>")
     o.append("</svg>")
     return "\n".join(o)
 
@@ -139,30 +147,28 @@ def run(t, pts, colour, width=4.5):
 
 
 def pipeline(t):
-    """How ferrule fits together: two readers into one model, one layout, SVG then PNG."""
+    """How ferrule fits together: one YAML format for both domains, one model, one layout, SVG then PNG."""
     W, H = 1284, 296
     X = [24, 284, 544, 804, 1064]  # card columns, 196 wide with 64 between
     top, bot, mid = 52, 180, 116   # card tops; centres at +32
     ink = "#8e939b"
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
-         f'role="img" aria-label="Pipeline: WireViz and pipeviz YAML are read into one model, laid out '
+         f'role="img" aria-label="Pipeline: wiring and plumbing YAML are read into one model, laid out '
          f'with elkjs, drawn as SVG and rasterised to PNG">',
          f'<rect width="{W}" height="{H}" rx="18" fill="{t["bg"]}"/>']
     # runs first, so the ports sit on top of them
-    o += run(t, [(X[0] + 196, top + 32), (X[1], top + 32)], WIRE["RD"])
-    o += run(t, [(X[0] + 196, bot + 32), (X[1], bot + 32)], COPPER, 8)
-    o += run(t, [(X[1] + 196, top + 32), (X[2] - 32, top + 32), (X[2] - 32, mid + 32), (X[2], mid + 32)], WIRE["RD"])
-    o += run(t, [(X[1] + 196, bot + 32), (X[2] - 32, bot + 32), (X[2] - 32, mid + 32), (X[2], mid + 32)], COPPER, 8)
+    o += run(t, [(X[0] + 196, top + 32), (X[1] - 32, top + 32), (X[1] - 32, mid + 32), (X[1], mid + 32)], WIRE["RD"])
+    o += run(t, [(X[0] + 196, bot + 32), (X[1] - 32, bot + 32), (X[1] - 32, mid + 32), (X[1], mid + 32)], COPPER, 8)
+    o += run(t, [(X[1] + 196, mid + 32), (X[2], mid + 32)], ink)
     o += run(t, [(X[2] + 196, mid + 32), (X[3], mid + 32)], ink)
     o += run(t, [(X[3] + 196, mid + 32), (X[4] - 32, mid + 32), (X[4] - 32, top + 32), (X[4], top + 32)], ink)
     o += run(t, [(X[4] + 98, top + 64), (X[4] + 98, bot)], ink)
     o.append(f'<text x="{X[4] + 86}" y="{(top + 64 + bot) / 2 + 4}" text-anchor="end" font-family="{FONT}" font-size="12" '
              f'fill="{t["muted"]}">flatten each theme</text>')
 
-    o += card(t, X[0], top, "WireViz YAML", "connectors, cables, links", accent="#ff8a1f")
-    o += card(t, X[0], bot, "pipeviz YAML", "pipes, fittings, tanks", accent=COPPER)
-    o += card(t, X[1], top, "Wiring reader", "pins, cores, gauges")
-    o += card(t, X[1], bot, "Plumbing reader", "runs, sizes, ratings")
+    o += card(t, X[0], top, "Wiring", "connectors, cables, cores", accent="#ff8a1f")
+    o += card(t, X[0], bot, "Plumbing", "pipes, fittings, tanks", accent=COPPER)
+    o += card(t, X[1], mid, "YAML reader", "one format, validated")
     o += card(t, X[2], mid, "Model", "one graph for both")
     o += card(t, X[3], mid, "Layout", "elkjs, orthogonal routes")
     o += card(t, X[4], top, "SVG", "light and dark, via CSS")
