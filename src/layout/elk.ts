@@ -35,6 +35,9 @@ export const ELK_OPTIONS: Record<string, string> = {
 /** The gap between the two halves of a mated pair. */
 const MATE_GAP = 48;
 
+/** How far a returning wire's two legs stay apart where it turns round. */
+const TURN_GAP = 16;
+
 interface Pair {
   id: string;
   a: Card;
@@ -77,6 +80,16 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     height: 0,
     layoutOptions: { "elk.port.side": p.side === "W" ? "WEST" : "EAST" },
   });
+  // A wire that doubles back would drag its far end a layer further on. Instead both ends lead
+  // into a node of their own, east of both, where the wire turns round and its tag sits.
+  const returning = sheet.wires.filter((w) => w.returns);
+  const turns = returning.map((w) => ({
+    id: `turn:${w.id}`,
+    width: w.tag?.w ?? TURN_GAP,
+    height: (w.tag?.h ?? 0) + 2 * TURN_GAP,
+    layoutOptions: { "elk.portConstraints": "FIXED_SIDE" },
+    ports: ["a", "b"].map((leg) => ({ id: `turn:${w.id}/${leg}`, width: 0, height: 0, layoutOptions: { "elk.port.side": "WEST" } })),
+  }));
   const graph: ElkNode = {
     id: "root",
     layoutOptions: { ...ELK_OPTIONS, ...options },
@@ -98,13 +111,20 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
           ...b.ports.filter((p) => p.side === "E").map((p) => port(b, p, a.w + MATE_GAP)),
         ],
       })),
+      ...turns,
     ],
-    edges: sheet.wires.filter((w) => !paired.some((p) => p.mate === w.id)).map((w) => ({
+    edges: [
+      ...returning.flatMap((w) => [
+        { id: `${w.id}/a`, sources: [`${w.from.card}/${w.from.port}`], targets: [`turn:${w.id}/a`] },
+        { id: `${w.id}/b`, sources: [`${w.to.card}/${w.to.port}`], targets: [`turn:${w.id}/b`] },
+      ]),
+      ...sheet.wires.filter((w) => !w.returns && !paired.some((p) => p.mate === w.id)).map((w) => ({
       id: w.id,
       sources: [`${w.from.card}/${w.from.port}`],
       targets: [`${w.to.card}/${w.to.port}`],
       labels: w.tag ? [{ text: w.tag.text, width: w.tag.w, height: w.tag.h }] : [],
-    })),
+      })),
+    ],
   };
 
   const out = await new ELK().layout(graph);
@@ -121,14 +141,29 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     const points = ya === yb ? [{ x: x0, y: ya }, { x: x1, y: yb }] : [{ x: x0, y: ya }, { x: mid, y: ya }, { x: mid, y: yb }, { x: x1, y: yb }];
     routes.set(mate, { kind: "poly", points });
   }
-  for (const e of out.edges as ElkExtendedEdge[]) {
+  const edges = new Map((out.edges as ElkExtendedEdge[]).map((e) => [e.id, e]));
+  const points = (e: ElkExtendedEdge) => {
     const s = e.sections![0];
+    return [s.startPoint, ...(s.bendPoints ?? []), s.endPoint].map(({ x, y }) => ({ x, y }));
+  };
+  const legs = new Set(returning.flatMap((w) => [`${w.id}/a`, `${w.id}/b`]));
+  for (const e of edges.values()) {
+    if (legs.has(e.id)) continue;
     const label = e.labels?.[0];
     routes.set(e.id, {
       kind: "poly",
-      points: [s.startPoint, ...(s.bendPoints ?? []), s.endPoint].map(({ x, y }) => ({ x, y })),
+      points: points(e),
       tag: label ? { x: label.x! + label.width! / 2, y: label.y! + label.height! / 2 } : undefined,
     });
+  }
+  // A returning wire runs out along one leg, down the middle of its turn, and back along the other.
+  for (const w of returning) {
+    const turn = cards.get(`turn:${w.id}`)!;
+    cards.delete(`turn:${w.id}`);
+    const a = points(edges.get(`${w.id}/a`)!), b = points(edges.get(`${w.id}/b`)!).reverse();
+    const x = turn.x + (w.tag?.w ?? TURN_GAP) / 2;
+    const [ya, yb] = [a[a.length - 1].y, b[0].y];
+    routes.set(w.id, { kind: "poly", points: [...a, { x, y: ya }, { x, y: yb }, ...b], tag: { x, y: (ya + yb) / 2 } });
   }
   return { engine: "elk", width: out.width!, height: out.height!, cards, routes };
 }

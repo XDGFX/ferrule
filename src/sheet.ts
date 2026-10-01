@@ -14,6 +14,7 @@ export const STYLE = {
   minW: 150,
   maxW: 300,
   titleSize: 13,
+  titleLh: 16,
   subSize: 10.5,
   rowSize: 11.5,
   noteSize: 10,
@@ -32,6 +33,8 @@ export interface Row {
   label: string;
   /** Colour codes for the pin's marking, one per stripe. */
   colours?: string[];
+  /** Muted text at the row's end, such as a port's thread and gender. */
+  detail?: string;
   /** Set on a row that stands in for a run of unused pins. */
   fold?: string;
 }
@@ -49,6 +52,8 @@ export interface Card {
   id: string;
   kind: "connector" | "simple" | "cable";
   title: string;
+  /** The title, wrapped to the card. Only a title wider than the widest card takes two lines. */
+  titleLines: string[];
   /** Type and subtype, wrapped to the card. */
   subLines: string[];
   accent: string;
@@ -73,6 +78,8 @@ export interface Wire {
   id: string;
   /** A mate is two connectors plugged together, drawn between their title bars. */
   kind?: "mate";
+  /** The wire doubles back, leaving both ends on their east side. */
+  returns?: boolean;
   from: { card: string; port: string };
   to: { card: string; port: string };
   colours: string[];
@@ -86,9 +93,12 @@ export interface Sheet {
   wires: Wire[];
 }
 
-/** Line weight for a conductor size in mm², so a 50 mm² run looks like one. */
-export function weight(gauge: number | null): number {
-  const w = gauge == null ? 0 : 2 + 0.75 * Math.sqrt(gauge);
+/**
+ * Line weight for a conductor size in mm², so a 50 mm² run looks like one, or for a pipe's bore in
+ * mm, which grows faster so a pipe reads heavier than any cable.
+ */
+export function weight(gauge: number | null, bore: number | null = null): number {
+  const w = bore != null ? 2 + 0.25 * bore : gauge == null ? 0 : 2 + 0.75 * Math.sqrt(gauge);
   return Math.round(Math.max(3, w) * 10) / 10;
 }
 
@@ -112,12 +122,13 @@ export function buildSheet(h: Harness): Sheet {
   for (const [i, l] of h.links.entries()) {
     const c = cables.get(l.cable)!;
     const core = c.wires[l.wire - 1];
-    const base = { colours: core.colours.length ? core.colours : ["GY"], weight: weight(c.gauge) };
+    const base = { colours: core.colours.length ? core.colours : ["GY"], weight: weight(c.gauge, c.bore ?? null) };
     if (isRun(c) && l.from && l.to) {
       wires.push({
         id: `w${i}`,
         from: touch(l.from.connector, l.from.pin, "E"),
-        to: touch(l.to.connector, l.to.pin, "W"),
+        to: touch(l.to.connector, l.to.pin, l.returns ? "E" : "W"),
+        ...(l.returns && { returns: true }),
         ...base,
         tag: tag(c),
       });
@@ -148,7 +159,7 @@ export function buildSheet(h: Harness): Sheet {
 }
 
 function tag(c: Cable): Tag | undefined {
-  const text = cableSpec(c);
+  const text = [c.label ?? "", cableSpec(c)].filter(Boolean).join(" · ");
   if (!text) return undefined;
   return { text, w: tagWidth(text), h: STYLE.tagH };
 }
@@ -180,12 +191,13 @@ export function displayName(id: string, template: string, repeated: Set<string>)
 
 function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>, repeated: Set<string>): Card {
   const sub = [c.type, c.subtype].filter(Boolean).join(" · ");
-  const title = displayName(c.id, c.template, repeated);
+  const title = c.label || displayName(c.id, c.template, repeated);
   if (c.simple) {
     const w = width([textWidth(title, STYLE.titleSize, 600) + 40, textWidth(sub, STYLE.subSize) + 24]);
     const card = base(c.id, "simple", title, sub, c.accent, w, [], []);
+    card.titleLines = wrapTitle(title, w - 40);
     card.subLines = wrap([sub], w - 24, STYLE.subSize);
-    card.h = STYLE.simpleH + extraSubLines(card) * STYLE.subLh;
+    card.h = STYLE.simpleH + extraHead(card);
     card.ports = ports(used, card, () => card.h / 2);
     return card;
   }
@@ -201,6 +213,7 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<st
   for (const p of c.pins) {
     const row: Row = { key: p.num, num: p.num, label: p.label || p.num };
     if (p.colours.length) row.colours = p.colours;
+    if (p.detail) row.detail = p.detail;
     if (inUse.has(p.num)) {
       flush();
       rows.push(row);
@@ -213,19 +226,19 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<st
 }
 
 function cableCard(c: Cable, used: Map<string, Set<Side>>, repeated: Set<string>): Card {
-  const title = displayName(c.id, c.template, repeated);
+  const title = c.label || displayName(c.id, c.template, repeated);
   const sub = [c.type, cableSpec(c)].filter(Boolean).join(" · ");
   const rows = c.wires.map((w) => ({ key: String(w.index), num: String(w.index), label: w.label }));
   return finish(base(c.id, "cable", title, sub, c.accent, 0, rows, c.notes), used);
 }
 
 function base(id: string, kind: Card["kind"], title: string, sub: string, accent: string, w: number, rows: Row[], notes: string[]): Card {
-  return { id, kind, title, subLines: sub ? [sub] : [], accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
+  return { id, kind, title, titleLines: [title], subLines: sub ? [sub] : [], accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
 }
 
-/** Subtitle lines beyond the first, each of which deepens the header. */
-function extraSubLines(card: Card): number {
-  return Math.max(0, card.subLines.length - 1);
+/** How much a wrapped title and subtitle deepen the header: one line of each fits as standard. */
+function extraHead(card: Card): number {
+  return (card.titleLines.length - 1) * STYLE.titleLh + Math.max(0, card.subLines.length - 1) * STYLE.subLh;
 }
 
 function finish(card: Card, used: Map<string, Set<Side>>): Card {
@@ -236,12 +249,13 @@ function finish(card: Card, used: Map<string, Set<Side>>): Card {
   card.w = width([
     textWidth(card.title, s.titleSize, 600) + 28 + s.pad,
     ...card.subLines.map((l) => textWidth(l, s.subSize) + 2 * s.pad),
-    ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1, 400, true) + 2 * s.pad : s.numW + 8 + swatch + textWidth(r.label, s.rowSize) + 34)),
+    ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1, 400, true) + 2 * s.pad : s.numW + 8 + swatch + textWidth(r.label, s.rowSize) + 34 + (r.detail ? textWidth(r.detail, s.rowSize - 1) + 16 : 0))),
     ...notes.map((n) => textWidth(n, s.noteSize) + 2 * s.pad),
   ]);
+  card.titleLines = wrapTitle(card.title, card.w - 28 - s.pad);
   card.subLines = wrap(card.subLines, card.w - 2 * s.pad, s.subSize);
   card.notes = wrap(notes, card.w - 2 * s.pad, s.noteSize);
-  card.rowTop = s.headH + extraSubLines(card) * s.subLh;
+  card.rowTop = s.headH + extraHead(card);
   card.h = card.rowTop + card.rows.length * s.rowH + (card.notes.length ? 10 + card.notes.length * s.noteLh : 0);
   card.ports = ports(used, card, (key) => {
     if (key === "mate") return card.rowTop / 2;
@@ -279,13 +293,18 @@ function paragraphs(lines: string[]): string[] {
   return out;
 }
 
-function wrap(texts: string[], max: number, size: number): string[] {
+/** A title wrapped to `max`, keeping an instance's ` · 2` with the word before it. */
+function wrapTitle(title: string, max: number): string[] {
+  return wrap([title.replace(/ · /g, "\u00a0·\u00a0")], max, STYLE.titleSize, 600).map((l) => l.replace(/\u00a0/g, " "));
+}
+
+function wrap(texts: string[], max: number, size: number, weight = 400): string[] {
   const out: string[] = [];
   for (const text of texts) {
     let line = "";
-    for (const word of text.split(/\s+/)) {
+    for (const word of text.split(/[ \t\n\r]+/)) {
       const next = line ? `${line} ${word}` : word;
-      if (line && textWidth(next, size) > max) {
+      if (line && textWidth(next, size, weight) > max) {
         out.push(line);
         line = word;
       } else line = next;

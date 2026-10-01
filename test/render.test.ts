@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { layoutElk } from "../src/layout/elk.ts";
 import { flatten, nearest, render } from "../src/render.ts";
 import { buildSheet } from "../src/sheet.ts";
+import { readPipeviz } from "../src/pipeviz.ts";
 import { readWireviz } from "../src/wireviz.ts";
 
 const loom = `
@@ -61,4 +62,38 @@ test("a mated pair is laid out side by side, joined by a short mate", async () =
   const pw = sheet.cards.find((c) => c.id === "P")!.w;
   assert.equal(p.y, s.y);
   assert.ok(s.x > p.x + pw && s.x - (p.x + pw) < 80);
+});
+
+const crosslink = `
+components:
+  tank:
+    label: TANK
+    ports: [HIGH, LOW]
+  adapter:
+    label: ADAPTER
+    simple: true
+pipes:
+  hose:
+    label: 40MM HOSE
+    size: 40mm
+    color: "#f97316"
+connections:
+  - [tank.a:LOW, adapter., hose^, adapter., tank.b:LOW]
+`;
+
+test("a reversed pipe turns round east of both its ends, with its tag at the turn", async () => {
+  const sheet = buildSheet(readPipeviz([crosslink], "crosslink"));
+  const place = await layoutElk(sheet);
+  const hose = sheet.wires.find((w) => w.returns)!;
+  const route = place.routes.get(hose.id)!;
+  const [first, last] = [route.points[0], route.points.at(-1)!];
+  const rightEdge = (id: string) => place.cards.get(id)!.x + sheet.cards.find((c) => c.id === id)!.w;
+  assert.equal(first.x, rightEdge(hose.from.card));
+  assert.equal(last.x, rightEdge(hose.to.card));
+  // Both adapters sit in the same layer, beside their tanks, rather than one a layer further on.
+  assert.equal(place.cards.get(hose.from.card)!.x, place.cards.get(hose.to.card)!.x);
+  assert.ok(route.tag!.x > Math.max(first.x, last.x));
+  const out = await render(sheet, place);
+  assert.match(out, /stroke:#f97316/);
+  assert.match(out, />40MM HOSE</);
 });

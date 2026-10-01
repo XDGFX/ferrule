@@ -6,11 +6,15 @@ export interface Pin {
   label: string;
   /** Colour codes for a pin's marking, one per stripe, as on a cable's wires. Empty when unmarked. */
   colours: string[];
+  /** What else the row says about the pin, such as a port's thread and gender. */
+  detail?: string;
 }
 
 export interface Connector {
   id: string;
   template: string;
+  /** The name drawn on the card, when the reader gives one. Without it, the card is named from its id. */
+  label?: string;
   type: string;
   subtype: string;
   pins: Pin[];
@@ -37,6 +41,10 @@ export interface Cable {
   type: string;
   /** Conductor size in mm², when the YAML gives one. */
   gauge: number | null;
+  /** A pipe's bore in mm, when the YAML gives one. */
+  bore?: number | null;
+  /** What a single run is called on its tag, ahead of its size and length. */
+  label?: string;
   length: string;
   wires: CableWire[];
   accent: string;
@@ -54,6 +62,11 @@ export interface Link {
   wire: number;
   from: End | null;
   to: End | null;
+  /**
+   * The run doubles back: it leaves both ends' parts on the same side, so what follows it is laid
+   * out back towards where it started. Pipeviz writes this as `pipe^`.
+   */
+  returns?: boolean;
 }
 
 export interface Harness {

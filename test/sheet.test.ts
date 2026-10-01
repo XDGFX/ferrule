@@ -161,3 +161,54 @@ test("a part used once isn't numbered", () => {
   assert.equal(s.cards.find((c) => c.id === "__LAMP_1")!.title, "LAMP");
   assert.equal(s.cards.find((c) => c.id === "__RUN_1"), undefined);
 });
+
+test("a pipe's line weight grows with its bore", () => {
+  assert.ok(weight(null, 40) > weight(null, 16));
+  assert.ok(weight(null, 16) > weight(null));
+});
+
+test("plumbing parts are titled by their label, show port detail, and pipes are tagged by name", () => {
+  const plumb: Harness = {
+    title: "p",
+    connectors: [
+      { ...conn("TANK", 2), label: "95L FRESH WATER TANK · a", pins: [{ num: "1", label: "HIGH", colours: [], detail: '1-1/2" BSP · F' }, { num: "2", label: "LOW", colours: [] }] },
+      { ...conn("__adapter_1", 1, true), template: "adapter", label: "ADAPTER" },
+      { ...conn("__adapter_2", 1, true), template: "adapter", label: "ADAPTER" },
+    ],
+    cables: [
+      { id: "__hose_1", template: "hose", type: "PVC", gauge: null, bore: 25, label: "25MM FILL HOSE", length: "", accent: "#888888", notes: [],
+        wires: [{ index: 1, label: "", code: "", colours: ["#f97316"] }] },
+      { id: "=2", template: "", type: "", gauge: null, bore: null, label: "", length: "", accent: "#888888", notes: [],
+        wires: [{ index: 1, label: "", code: "", colours: [] }] },
+    ],
+    links: [
+      { cable: "__hose_1", wire: 1, from: { connector: "__adapter_1", pin: "1" }, to: { connector: "__adapter_2", pin: "1" }, returns: true },
+      { cable: "=2", wire: 1, from: { connector: "TANK", pin: "1" }, to: { connector: "__adapter_1", pin: "1" } },
+    ],
+    mates: [],
+  };
+  const s = buildSheet(plumb);
+  const tank = s.cards.find((c) => c.id === "TANK")!;
+  assert.equal(tank.title, "95L FRESH WATER TANK · a");
+  assert.equal(tank.rows[0].detail, '1-1/2" BSP · F');
+  assert.ok(tank.w >= buildSheet({ ...plumb, connectors: [{ ...plumb.connectors[0], pins: pins(2) }] }).cards[0].w);
+  const [hose, direct] = s.wires;
+  assert.equal(hose.tag?.text, "25MM FILL HOSE");
+  assert.equal(hose.weight, weight(null, 25));
+  assert.deepEqual([hose.from.port, hose.to.port, hose.returns], ["1:E", "1:E", true]);
+  assert.equal(direct.tag, undefined);
+});
+
+test("a title too long for the widest card wraps and deepens the header", () => {
+  const long = 'DWV ADAPTER 1-1/2" BSP FEMALE → 40MM BARB · 2';
+  const s = buildSheet({ ...harness, connectors: [{ ...conn("ISO", 1, true), label: long }, { ...conn("A", 12), label: long }] });
+  for (const c of s.cards.filter((k) => k.kind !== "cable")) {
+    assert.ok(c.titleLines.length > 1, c.id);
+    assert.equal(c.titleLines.join(" "), long);
+    assert.ok(c.titleLines.at(-1)!.endsWith("BARB · 2"), c.titleLines.join(" / "));
+  }
+  const plain = buildSheet({ ...harness, connectors: [conn("ISO", 1, true), conn("A", 12)] });
+  assert.ok(s.cards[0].h > plain.cards[0].h);
+  assert.ok(s.cards[1].rowTop > plain.cards[1].rowTop);
+  assert.deepEqual(plain.cards[1].titleLines, ["A"]);
+});
