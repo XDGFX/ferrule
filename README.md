@@ -24,7 +24,31 @@ its own layout and drawing, so the output looks the same everywhere and works in
 Coming from WireViz? The format will feel familiar, and ferrule keeps compatibility where it can.
 
 > [!NOTE]
-> Pre-alpha. The look is settled, and the layout spike passed: see [docs/spike](docs/spike/README.md). Parity is next.
+> Pre-alpha. Wiring works: ferrule reads the WireViz subset one real project uses and draws all
+> ten of its looms. Plumbing is not started.
+
+## Use
+
+```bash
+npm install github:XDGFX/ferrule#v0.2.0
+npx ferrule --prepend shared.yml --output-dir diagrams src/*.yml
+```
+
+The arguments match WireViz's CLI where the two overlap. Each loom gives `<name>.svg`, which
+follows the viewer's light or dark mode, and `<name>.png`, rendered dark. `--format svg` or
+`--format png` writes one of the two. Adding `md`, as in `--format svg,png,md`, also writes
+`<name>.md`: a cut list of every core, with its size, length and both ends, and a pinout table
+for each connector. GitHub renders both tables on a phone.
+
+**WireViz syntax read:** prepended files with cross-file anchors and `<<` merges; `pinlabels`,
+`pincount`, `pincolors`, `loops` and `style: simple` on connectors; `colors`, `wirelabels`,
+`wirecount`, `gauge` (mm² or AWG), `length` and `notes` on cables; `X.Y` and `X.` instances; pin
+ranges such as `1-4`; connection sets that start or end with a cable; and `==` mates. Anything
+else is ignored, or is an error if it changes what connects to what.
+
+**Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
+loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate
+or loop.
 
 ## Why
 
@@ -34,8 +58,8 @@ Coming from WireViz? The format will feel familiar, and ferrule keeps compatibil
 - **The same bytes on every machine.** Graphviz-based tools measure text with whatever fonts
   happen to be installed, so the same YAML renders differently on a laptop and a CI runner.
   ferrule bundles its font and measures text itself, so CI can diff SVGs byte for byte.
-- **Real dark mode.** SVGs carry CSS variables and `prefers-color-scheme`. PNGs come in light and
-  dark, because some viewers, including the GitHub mobile app, show PNGs but not SVGs.
+- **Real dark mode.** SVGs carry CSS variables and `prefers-color-scheme`. PNGs are rendered
+  dark, because the viewer that needs them, the GitHub mobile app, shows PNGs but not SVGs.
 - **Wiring and plumbing match.** One format and one renderer cover both.
 
 ## What it looks like
@@ -67,7 +91,10 @@ engine existed.
 | **Gauge** | Line weight follows conductor size, so a 50 mm² run looks like one. |
 | **Single-core runs** | A tag on the wire, such as `50 mm² · 1.5 m`, not a separate box. |
 | **Multi-core cables** | A dashed card that the cores pass straight through, each labelled on its wire. |
-| **Off-sheet ends** | An arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
+| **Junctions** | A single core that splits, or ends open, gets a dashed card like a multi-core. A core that goes nowhere ends in a short cap. |
+| **Mates and loops** | Two connectors plugged together are joined by a chain of dots between their title bars. Two pins bridged on one connector loop off its side. |
+| **Pin colours** | A small chip before the pin's label, split for a two-colour mark. |
+| **Off-sheet ends** | Planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 
 ## How it fits together
@@ -79,7 +106,7 @@ engine existed.
 
 Wiring and plumbing share one format and one model, so both come out of the same layout and
 drawing code. PNGs go through a flattened copy of the SVG with literal colours, one per theme,
-because resvg can't resolve CSS variables.
+because resvg can't resolve CSS variables. The CLI writes the dark one.
 
 **Fallback:** if ELK's layouts turn out worse than Graphviz's, ferrule keeps `dot -Tjson` for
 layout only and still draws everything itself. That keeps the look and dark mode, but output would
@@ -89,8 +116,8 @@ no longer be identical across machines.
 
 - [x] **Look.** Three style directions were built by hand and checked on a phone, and *Instrument* was chosen.
 - [x] **Layout spike.** Lay out a large, dense loom with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
-- [ ] **Parity.** Render a full set of real looms until every one is correct, then compare them byte for byte in CI.
-- [ ] **New outputs.** Pinout tables per connector in Markdown, a cut list, and gauge checks against terminal and fuse limits.
+- [x] **Parity.** Render a full set of real looms until every one is correct. Their connections match WireViz's, and the project that uses them diffs the SVGs byte for byte in CI.
+- [x] **New outputs.** Pinout tables per connector and a cut list, in Markdown. Gauge checks against fuse and contact limits live in the project that uses ferrule, since they don't need the renderer.
 - [ ] **Plumbing.** Pipe runs, fittings and tanks on the same core.
 
 ## Not planned

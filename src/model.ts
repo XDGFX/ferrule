@@ -4,6 +4,8 @@
 export interface Pin {
   num: string;
   label: string;
+  /** Colour codes for a pin's marking, one per stripe, as on a cable's wires. Empty when unmarked. */
+  colours: string[];
 }
 
 export interface Connector {
@@ -14,6 +16,8 @@ export interface Connector {
   pins: Pin[];
   /** A `style: simple` connector has no pin table: wires attach to the card itself. */
   simple: boolean;
+  /** Pins bridged on the connector itself, as pairs of pin numbers. */
+  loops: [string, string][];
   accent: string;
   notes: string[];
 }
@@ -21,6 +25,8 @@ export interface Connector {
 export interface CableWire {
   index: number;
   label: string;
+  /** The colour code as written, such as "GNYE". A connection can name a wire by it. */
+  code: string;
   /** Colour codes, one per stripe: ["GN", "YE"] for a green wire with a yellow tracer. */
   colours: string[];
 }
@@ -55,4 +61,11 @@ export interface Harness {
   connectors: Connector[];
   cables: Cable[];
   links: Link[];
+  /** Connectors mated as a whole, such as the two halves of an inline plug. */
+  mates: Mate[];
+}
+
+export interface Mate {
+  from: string;
+  to: string;
 }

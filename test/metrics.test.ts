@@ -5,7 +5,7 @@ import type { Placement, Route } from "../src/layout/types.ts";
 import type { Card, Sheet } from "../src/sheet.ts";
 
 const card = (id: string, w: number, h: number): Card => ({
-  id, kind: "connector", title: id, sub: "", accent: "#888888", w, h, rowTop: 0, rowH: 24, rows: [], notes: [], ports: [],
+  id, kind: "connector", title: id, subLines: [], accent: "#888888", w, h, rowTop: 0, rowH: 24, rows: [], loops: [], notes: [], ports: [],
 });
 const wire = (id: string, tag = false) => ({
   id, from: { card: "A", port: "1:E" }, to: { card: "B", port: "1:W" }, colours: ["RD"], weight: 3,

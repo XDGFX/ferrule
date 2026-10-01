@@ -124,3 +124,99 @@ test("cable notes are read", () => {
   const withNotes = loom.replace('    wirelabels: ["24V", "GND"]\n', '    wirelabels: ["24V", "GND"]\n    notes: |\n      Verify gauge\n');
   assert.deepEqual(readWireviz([shared, withNotes], "x").cables.find((c) => c.id === "TWIN")!.notes, ["Verify gauge"]);
 });
+
+// Syntax the other Hailey looms use, matched against how the WireViz fork reads it.
+const more = `
+connectors:
+  DT:
+    pinlabels: ["A", "B", "C", "D"]
+    pincolors: ["RD", "BK", "GNYE", ""]
+  PLUG:
+    pincount: 1
+    pinlabels: ["ETH"]
+  LAMP:
+    pinlabels: ["DI", "BI", "BO", "GND"]
+    loops: [[2, 3]]
+cables:
+  QUAD:
+    wirecount: 4
+    colors: ["RD", "BK", "YE", "WH"]
+    wirelabels: ["V1", "GND", "D1", "D2"]
+  ETH:
+    wirecount: 1
+    colors: ["GY"]
+connections:
+  -
+    - DT: [1-4]
+    - QUAD: [1-4]
+    - DT.DT_B: [1-4]
+  -
+    - PLUG
+    - ETH.
+    - LAMP: [DI]
+  -
+    - DT.DT_B
+    - [==]
+    - DT.DT_C
+  -
+    - QUAD.QUAD_B: [V1, BK]
+    - LAMP: [BO, GND]
+`;
+const readMore = () => readWireviz([more], "More");
+
+test("pin ranges expand, as WireViz's expand does", () => {
+  const quad = readMore().links.filter((l) => l.cable === "QUAD");
+  assert.deepEqual(quad.map((l) => [l.from!.pin, l.wire, l.to!.pin]), [["1", 1, "1"], ["2", 2, "2"], ["3", 3, "3"], ["4", 4, "4"]]);
+});
+
+test("a bare connector name connects its pin 1", () => {
+  const eth = readMore().links.find((l) => l.cable.startsWith("__ETH"))!;
+  assert.deepEqual(eth.from, { connector: "PLUG", pin: "1" });
+  assert.deepEqual(eth.to, { connector: "LAMP", pin: "1" });
+});
+
+test("a set that starts with a cable leaves that end open", () => {
+  const b = readMore().links.filter((l) => l.cable === "QUAD_B");
+  assert.deepEqual(b.map((l) => [l.from, l.wire, l.to?.pin]), [[null, 1, "3"], [null, 2, "4"]]);
+});
+
+test("a wire can be named by its colour code", () => {
+  const b = readMore().links.filter((l) => l.cable === "QUAD_B");
+  assert.equal(b[1].wire, 2);
+});
+
+test("an == arrow mates two connectors as a whole", () => {
+  assert.deepEqual(readMore().mates, [{ from: "DT_B", to: "DT_C" }]);
+});
+
+test("loops and pin colours are read", () => {
+  const h = readMore();
+  assert.deepEqual(h.connectors.find((c) => c.id === "LAMP")!.loops, [["2", "3"]]);
+  assert.deepEqual(h.connectors.find((c) => c.id === "DT")!.pins.map((p) => p.colours), [["RD"], ["BK"], ["GN", "YE"], []]);
+});
+
+test("a duplicate key takes the last value, as PyYAML does", () => {
+  const dup = `connectors:\n  X:\n    type: "one"\n    type: "two"\n    pinlabels: ["A"]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - X: [A]\n    - W: [1]\n`;
+  assert.equal(readWireviz([dup], "x").connectors[0].type, "two");
+});
+
+test("a fresh instance is one per entry, however many wires the entry names", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\ncables:\n  TWIN:\n    wirecount: 2\nconnections:\n  -\n    - A: [X, Y]\n    - TWIN.: [1, 2]\n  -\n    - A: [X]\n    - TWIN.: [1]\n`;
+  const twins = readWireviz([src], "x").cables.map((c) => c.id);
+  assert.deepEqual(twins, ["__TWIN_1", "__TWIN_2"]);
+});
+
+test("a bare fresh name repeated down a set is a new instance on every row, as in the fork", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\n  B:\n    pincount: 1\ncables:\n  ONE:\n    wirecount: 1\nconnections:\n  -\n    - A: [X, Y]\n    - ONE.: [1, 1]\n    - B.\n`;
+  assert.deepEqual(readWireviz([src], "x").connectors.map((c) => c.id), ["A", "__B_1", "__B_2"]);
+});
+
+test("a loop on a pin the connector doesn't have is an error, as in the fork", () => {
+  const src = `connectors:\n  A:\n    pinlabels: ["X", "Y"]\n    loops: [[1, 3]]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - A: [X]\n    - W: [1]\n`;
+  assert.throws(() => readWireviz([src], "x"), /A.*loop pin 3/);
+});
+
+test("more pin labels than pincount is an error, not dropped labels", () => {
+  const src = `connectors:\n  A:\n    pincount: 1\n    pinlabels: ["X", "Y"]\ncables:\n  W:\n    wirecount: 1\nconnections:\n  -\n    - A: [X]\n    - W: [1]\n`;
+  assert.throws(() => readWireviz([src], "x"), /A.*2 pin labels.*1 pin/);
+});

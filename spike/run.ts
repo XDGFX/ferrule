@@ -40,8 +40,8 @@ for (const loom of looms) {
   const t2 = performance.now();
 
   const svgs: Record<string, string> = {
-    elk: render(sheet, elk, `${loom}.yml · elkjs layered, orthogonal`),
-    dot: render(sheet, dot, `${loom}.yml · dot -Tjson, splines`),
+    elk: await render(sheet, elk, `${loom}.yml · elkjs layered, orthogonal`),
+    dot: await render(sheet, dot, `${loom}.yml · dot -Tjson, splines`),
   };
   for (const [engine, svg] of Object.entries(svgs)) {
     writeFileSync(new URL(`${loom}-${engine}.svg`, outDir), svg + "\n");
@@ -55,7 +55,7 @@ for (const loom of looms) {
   }
 
   // Same input, fresh ELK instance: the bytes must match for a strict CI diff to work.
-  const again = render(sheet, await layoutElk(sheet), `${loom}.yml · elkjs layered, orthogonal`);
+  const again = await render(sheet, await layoutElk(sheet), `${loom}.yml · elkjs layered, orthogonal`);
   const stable = again === svgs.elk;
 
   report.push(section(loom, sheet.cards.length, sheet.wires.length, { elk, dot }, { elk: t1 - t0, dot: t2 - t1 }, stable, sheet));
