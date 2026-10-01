@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Render WireViz looms in the Instrument style. Takes the same arguments as the fork's CLI where
-// the two overlap, so a project can switch by changing the command name.
+// Render WireViz looms and pipeviz plans in the Instrument style. Takes the same arguments as the
+// WireViz fork's CLI where the two overlap, so a project can switch by changing the command name.
 //
 //   ferrule [--prepend FILE]... [--format svg,png,md] [--output-dir DIR] LOOM.yml...
 //
+// Each file is read as pipeviz if it has a top-level `components` or `pipes` key, else as WireViz.
 // Writes <loom>.svg, which follows the viewer's light or dark mode, and <loom>.png, rendered dark.
 // `md` adds <loom>.md, a cut list and a pinout for each connector, and is only written on request.
 
@@ -17,6 +18,7 @@ import { writeFonts } from "./measure.ts";
 import { flatten, render } from "./render.ts";
 import { buildSheet } from "./sheet.ts";
 import { tables } from "./tables.ts";
+import { isPipeviz, readPipeviz } from "./pipeviz.ts";
 import { readWireviz } from "./wireviz.ts";
 
 const FORMATS = ["svg", "png", "md"] as const;
@@ -58,7 +60,8 @@ async function main(argv: string[]): Promise<number> {
       const out = values["output-dir"] ?? dirname(loom);
       mkdirSync(out, { recursive: true });
 
-      const harness = readWireviz([...prepended, readFileSync(loom, "utf8")], name);
+      const plan = readFileSync(loom, "utf8");
+      const harness = (isPipeviz(plan) ? readPipeviz : readWireviz)([...prepended, plan], name);
       if (formats.includes("md" satisfies Format)) writeFileSync(join(out, `${name}.md`), tables(harness));
       if (!formats.some((f) => f !== "md")) {
         console.log(`${loom} → ${join(out, `${name}.md`)}`);

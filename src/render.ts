@@ -133,9 +133,12 @@ function drawCard(g: Glyphs, c: Card, p: Pt): string[] {
   const dash = c.kind === "cable" ? ' stroke-dasharray="5 3"' : "";
   o.push(`<rect class="card" x="${n(p.x)}" y="${n(p.y)}" width="${c.w}" height="${c.h}" rx="${RADIUS}"${dash}/>`);
   o.push(`<rect class="chip" x="${n(p.x + 12)}" y="${n(p.y + 12)}" width="10" height="10" rx="2.5" style="fill:${c.accent}"/>`);
-  o.push(text(g, `x="${n(p.x + 28)}" y="${n(p.y + 21)}" font-size="${S.titleSize}"`, c.title, 600));
+  c.titleLines.forEach((line, j) => {
+    o.push(text(g, `x="${n(p.x + 28)}" y="${n(p.y + 21 + j * S.titleLh)}" font-size="${S.titleSize}"`, line, 600));
+  });
+  const subTop = p.y + 39 + (c.titleLines.length - 1) * S.titleLh;
   c.subLines.forEach((line, j) => {
-    o.push(text(g, `class="muted" x="${n(p.x + 12)}" y="${n(p.y + 39 + j * S.subLh)}" font-size="${S.subSize}"`, line));
+    o.push(text(g, `class="muted" x="${n(p.x + 12)}" y="${n(subTop + j * S.subLh)}" font-size="${S.subSize}"`, line));
   });
   const swatch = c.rows.some((r) => r.colours) ? S.swatchW : 0;
   // A cable card's rows are drawn later, over the cores that pass through it.
@@ -151,6 +154,7 @@ function drawCard(g: Glyphs, c: Card, p: Pt): string[] {
     o.push(text(g, `class="${used ? "muted" : "faint"}" x="${n(p.x + S.numW - 8)}" y="${n(base)}" text-anchor="end" font-size="${S.rowSize - 1}"`, r.num));
     if (r.colours) o.push(...drawSwatch(p.x + S.numW + 8, ry + c.rowH / 2, r.colours));
     o.push(text(g, `${used ? "" : 'class="faint" '}x="${n(p.x + S.numW + 8 + swatch)}" y="${n(base)}" font-size="${S.rowSize}"`, r.label));
+    if (r.detail) o.push(text(g, `class="faint" x="${n(p.x + c.w - 12)}" y="${n(base)}" text-anchor="end" font-size="${S.rowSize - 1}"`, r.detail));
   });
   if (c.notes.length) {
     const ny = p.y + c.rowTop + c.rows.length * c.rowH;
@@ -205,8 +209,12 @@ function casing(code: string): string {
   return code === "BK" ? " case-bk" : code === "WH" ? " case-wh" : "";
 }
 
-/** A core's stroke. Black and white follow the theme, so neither matches the ground it's drawn on. */
+/**
+ * A core's stroke, from a colour code or a hex value. Black and white follow the theme, so neither
+ * matches the ground it's drawn on.
+ */
 function coreColour(code: string): string {
+  if (code.startsWith("#")) return code;
   if (code === "BK") return "var(--core-bk)";
   if (code === "WH") return "var(--core-wh)";
   return WIRE[code] ?? WIRE.GY;

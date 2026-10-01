@@ -18,8 +18,9 @@ export function hex(value: unknown): string {
   return WIRE[value] ?? NEUTRAL;
 }
 
-/** Split a WireViz colour code into stripes: "GNYE" is green with a yellow tracer. */
+/** Split a WireViz colour code into stripes: "GNYE" is green with a yellow tracer. A hex value is one stripe. */
 export function stripes(code: string): string[] {
+  if (code.startsWith("#")) return [code];
   const out: string[] = [];
   for (let i = 0; i < code.length; i += 2) out.push(code.slice(i, i + 2));
   return out;

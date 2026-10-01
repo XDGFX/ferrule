@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { stripes } from "../src/colours.ts";
 import { readWireviz } from "../src/wireviz.ts";
 
 const shared = `
@@ -113,6 +114,10 @@ test("links resolve pins by label or number and wires by label or number", () =>
 test("two-colour codes split into stripes", () => {
   const twin = read().cables.find((c) => c.id === "TWIN")!;
   assert.deepEqual(twin.wires.map((w) => w.colours), [["RD"], ["GN", "YE"]]);
+});
+
+test("a hex colour is one stripe, not split like a code", () => {
+  assert.deepEqual(stripes("#d2b48c"), ["#d2b48c"]);
 });
 
 test("an unknown pin is an error, not a silent gap", () => {

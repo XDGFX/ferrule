@@ -24,13 +24,13 @@ its own layout and drawing, so the output looks the same everywhere and works in
 Coming from WireViz? The format will feel familiar, and ferrule keeps compatibility where it can.
 
 > [!NOTE]
-> Pre-alpha. Wiring works: ferrule reads the WireViz subset one real project uses and draws all
-> ten of its looms. Plumbing is not started.
+> Pre-alpha. ferrule reads the WireViz subset and the pipeviz YAML that one real project uses,
+> and draws all ten of its looms and all four of its plumbing plans.
 
 ## Use
 
 ```bash
-npm install github:XDGFX/ferrule#v0.2.0
+npm install github:XDGFX/ferrule#v0.3.0
 npx ferrule --prepend shared.yml --output-dir diagrams src/*.yml
 ```
 
@@ -45,6 +45,17 @@ for each connector. GitHub renders both tables on a phone.
 `wirecount`, `gauge` (mm² or AWG), `length` and `notes` on cables; `X.Y` and `X.` instances; pin
 ranges such as `1-4`; connection sets that start or end with a cable; and `==` mates. Anything
 else is ignored, or is an error if it changes what connects to what.
+
+**Plumbing** is read from pipeviz YAML, chosen for any file with a top-level `components` or
+`pipes` key. Read: prepended files, deep-merged under the plan's own `diagram`, `templates` and
+`components`; `ref` and nested `template` chains; `ports` as names or objects, or `portcount`;
+`simple` fittings; `component:port`, `component.name` and fresh `component.` instances; ports by
+name or number, defaulting to the first; and `pipe^`, which turns the chain round. Each pipe in
+a chain is a fresh run, coloured by its `colour` or `service_rating` and weighted by its `size`.
+Chains are checked against pipeviz's rules: an unknown name or port, or a pipe next to a pipe, is
+an error. ferrule is a little stricter: only a pipe may carry `^`, a chain turns round once, and
+a pipe takes no instance. Legacy `edges` and pipeviz's `--combined` sheet are not read. The
+`md` tables are written for wiring and read poorly for plumbing.
 
 **Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
 loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate
@@ -94,6 +105,9 @@ engine existed.
 | **Junctions** | A single core that splits, or ends open, gets a dashed card like a multi-core. A core that goes nowhere ends in a short cap. |
 | **Mates and loops** | Two connectors plugged together are joined by a chain of dots between their title bars. Two pins bridged on one connector loop off its side. |
 | **Pin colours** | A small chip before the pin's label, split for a two-colour mark. |
+| **Pipes** | A run tagged with the pipe's name, coloured by service (potable blue, hot red, waste brown, vent olive) unless it has its own colour. Line weight follows bore, so a pipe reads heavier than any cable. Parts that screw straight together are joined by a short untagged line. |
+| **Ports** | A port's thread and gender sit muted at the end of its row, such as `1/2" BSP · F`. |
+| **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its tag at the turn, so the parts after it lie back beside the parts before it. |
 | **Off-sheet ends** | Planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 
@@ -118,7 +132,7 @@ no longer be identical across machines.
 - [x] **Layout spike.** Lay out a large, dense loom with elkjs and compare it with `dot -Tjson`. This is the go/no-go point.
 - [x] **Parity.** Render a full set of real looms until every one is correct. Their connections match WireViz's, and the project that uses them diffs the SVGs byte for byte in CI.
 - [x] **New outputs.** Pinout tables per connector and a cut list, in Markdown. Gauge checks against fuse and contact limits live in the project that uses ferrule, since they don't need the renderer.
-- [ ] **Plumbing.** Pipe runs, fittings and tanks on the same core.
+- [x] **Plumbing.** Pipe runs, fittings and tanks on the same core, read from pipeviz YAML.
 
 ## Not planned
 
