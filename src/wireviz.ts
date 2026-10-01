@@ -1,23 +1,20 @@
 // Reads a subset of WireViz YAML into the harness model.
 //
 // Supported: prepended files (the text is concatenated, so anchors cross files), `<<` merge keys,
-// `pinlabels`/`pincount`, `style: simple`, `X.Y` named instances, `X.` fresh instances, and
-// connection sets that alternate connector, cable, connector.
+// `pinlabels`/`pincount`/`pincolors`, `loops`, `style: simple`, `X.Y` named instances, `X.` fresh
+// instances, pin ranges such as `1-4`, and connection sets that alternate connector and cable,
+// may start or end with a cable, and may mate two connectors with an `==` arrow. Where the fork
+// and this reader could disagree, this follows the fork: see wireviz.py's parse() and connect().
 
 import { parse } from "yaml";
 import { hex, stripes } from "./colours.ts";
-import type { Cable, Connector, End, Harness, Link } from "./model.ts";
+import type { Cable, Connector, End, Harness, Link, Mate } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
-interface Ref {
-  kind: "connector" | "cable";
-  id: string;
-  refs: (string | number)[] | null;
-}
-
 export function readWireviz(sources: string[], title: string): Harness {
-  const doc: Yaml = parse(sources.join("\n"), { merge: true, maxAliasCount: -1 }) ?? {};
+  // uniqueKeys off: the fork loads with PyYAML, which keeps the last of a duplicated key.
+  const doc: Yaml = parse(sources.join("\n"), { merge: true, maxAliasCount: -1, uniqueKeys: false }) ?? {};
   const connectorDefs: Yaml = doc.connectors ?? {};
   const cableDefs: Yaml = doc.cables ?? {};
 
@@ -26,7 +23,7 @@ export function readWireviz(sources: string[], title: string): Harness {
   const fresh = new Map<string, number>();
   const links: Link[] = [];
 
-  function instance(designator: string): Omit<Ref, "refs"> {
+  function instance(designator: string): { kind: "connector" | "cable"; id: string } {
     const dot = designator.indexOf(".");
     const template = dot < 0 ? designator : designator.slice(0, dot);
     let id = dot < 0 ? designator : designator.slice(dot + 1);
@@ -46,51 +43,109 @@ export function readWireviz(sources: string[], title: string): Harness {
     throw new Error(`${designator}: no connector or cable is defined as ${template}`);
   }
 
+  const mates: Mate[] = [];
+
+  // Follows the fork's parse(): every entry becomes one column of `count` items, a string is
+  // repeated down its column and connects pin 1, and the columns are then read row by row.
   for (const set of doc.connections ?? []) {
-    const items: Ref[] = (set as unknown[]).map((item) => {
-      if (typeof item === "string") return { ...instance(item), refs: null };
-      const [designator, refs] = Object.entries(item as Yaml)[0];
-      return { ...instance(designator), refs: Array.isArray(refs) ? refs : [refs] };
-    });
-    for (let i = 1; i < items.length; i++) {
-      if (items[i].kind === items[i - 1].kind) {
-        throw new Error(`${items[i - 1].id} and ${items[i].id}: a connection must alternate connector and cable`);
-      }
+    const entries = set as unknown[];
+    const lengths = entries.flatMap((e) =>
+      Array.isArray(e) ? [e.length] : e && typeof e === "object" ? [expand(Object.values(e)[0]).length] : [],
+    );
+    const count = lengths[0] ?? 1;
+    if (lengths.some((n) => n !== count)) {
+      throw new Error(`${names(entries)}: every item in a connection set must reference the same number of connections`);
     }
-    const count = Math.max(...items.map((it) => it.refs?.length ?? 1));
+    const columns: Item[][] = entries.map((e) => {
+      if (typeof e === "string") return Array.from({ length: count }, () => item(e, 1));
+      if (Array.isArray(e)) return e.map((d) => item(String(d), 1));
+      const [designator, refs] = Object.entries(e as Yaml)[0];
+      return expand(refs).map((ref) => item(designator, ref));
+    });
+    columns.forEach((col, i) => {
+      if (i && (col[0].kind === "connector") === (columns[i - 1][0].kind === "connector")) {
+        throw new Error(`${names(entries)}: a connection set must alternate connector and cable`);
+      }
+    });
+
     for (let k = 0; k < count; k++) {
-      items.forEach((it, i) => {
-        if (it.kind !== "cable") return;
-        const c = cables.get(it.id)!;
-        const end = (j: number): End | null => {
-          const other = items[j];
-          if (!other) return null;
-          const conn = connectors.get(other.id)!;
-          return { connector: conn.id, pin: pinNum(conn, pick(other, k)) };
-        };
-        links.push({ cable: c.id, wire: wireIndex(c, pick(it, k)), from: end(i - 1), to: end(i + 1) });
+      const row = columns.map((col) => col[k]);
+      const end = (it: Item | undefined): End | null => {
+        if (!it) return null;
+        const conn = connectors.get(it.id)!;
+        return { connector: conn.id, pin: pinNum(conn, it.ref) };
+      };
+      row.forEach((it, i) => {
+        if (it.kind === "cable") {
+          const c = cables.get(it.id)!;
+          links.push({ cable: c.id, wire: wireIndex(c, it.ref), from: end(row[i - 1]), to: end(row[i + 1]) });
+        } else if (it.kind === "arrow") {
+          const from = row[i - 1], to = row[i + 1];
+          if (!from || !to) throw new Error(`${names(entries)}: an arrow needs a connector on each side`);
+          // Only a whole-component mate is supported; the fork draws it once, from the first row.
+          if (!it.id.includes("=")) throw new Error(`${names(entries)}: pin-by-pin mates (${it.id}) are not supported`);
+          if (k === 0) mates.push({ from: from.id, to: to.id });
+        }
       });
     }
   }
 
-  return { title, connectors: [...connectors.values()], cables: [...cables.values()], links };
+  function item(designator: string, ref: string | number): Item {
+    if (ARROW.test(designator)) return { kind: "arrow", id: designator.trim(), ref };
+    return { ...instance(designator), ref };
+  }
+
+  return { title, connectors: [...connectors.values()], cables: [...cables.values()], links, mates };
 }
 
-function pick(ref: Ref, k: number): string | number | null {
-  if (!ref.refs) return null;
-  return ref.refs.length === 1 ? ref.refs[0] : ref.refs[k];
+/** One cell of a connection set: a component, or an arrow, and what it references in this row. */
+interface Item {
+  kind: "connector" | "cable" | "arrow";
+  id: string;
+  ref: string | number;
+}
+
+/** WireViz arrows: a run of `-` or of `=`, optionally headed with `<` and `>`. */
+const ARROW = /^\s*<?(-+|=+)>?\s*$/;
+
+/** WireViz's expand: a scalar or a list, where `a-b` between two integers is an inclusive range. */
+export function expand(value: unknown): (string | number)[] {
+  const out: (string | number)[] = [];
+  for (const raw of Array.isArray(value) ? value : [value]) {
+    const e = String(raw);
+    const range = /^\s*(\d+)\s*-\s*(\d+)\s*$/.exec(e);
+    if (range) {
+      const a = Number(range[1]), b = Number(range[2]);
+      const step = a <= b ? 1 : -1;
+      for (let x = a; x !== b + step; x += step) out.push(x);
+    } else out.push(/^-?\d+$/.test(e.trim()) ? Number(e) : e);
+  }
+  return out;
+}
+
+function names(entries: unknown[]): string {
+  return entries.map((e) => (typeof e === "string" ? e : Array.isArray(e) ? `[${e.join(", ")}]` : Object.keys(e as Yaml)[0])).join(" → ");
 }
 
 function connector(id: string, template: string, def: Yaml): Connector {
   const simple = def.style === "simple";
   const labels: string[] = (def.pinlabels ?? []).map(String);
-  const count = simple ? 1 : Math.max(labels.length, Number(def.pincount ?? 0));
+  const marks: string[] = (def.pincolors ?? []).map((c: unknown) => (c == null ? "" : String(c)));
+  const count = simple ? 1 : Number(def.pincount ?? 0) || Math.max(labels.length, marks.length);
   return {
     id,
     template,
     type: String(def.type ?? ""),
     subtype: String(def.subtype ?? ""),
-    pins: Array.from({ length: count }, (_, i) => ({ num: String(i + 1), label: labels[i] ?? "" })),
+    pins: Array.from({ length: count }, (_, i) => ({
+      num: String(i + 1),
+      label: labels[i] ?? "",
+      colours: marks[i] ? stripes(marks[i]) : [],
+    })),
+    loops: (def.loops ?? []).map((pair: unknown[]) => {
+      if (pair.length !== 2) throw new Error(`${id}: a loop joins exactly two pins`);
+      return [String(pair[0]), String(pair[1])];
+    }),
     simple,
     accent: hex(def.bgcolor_title ?? def.bgcolor),
     notes: lines(def.notes),
@@ -110,6 +165,7 @@ function cable(id: string, template: string, def: Yaml): Cable {
     wires: Array.from({ length: count }, (_, i) => ({
       index: i + 1,
       label: labels[i] ?? "",
+      code: colours[i] ?? "",
       colours: colours[i] ? stripes(colours[i]) : [],
     })),
     accent: hex(def.bgcolor_title ?? def.bgcolor),
@@ -117,19 +173,23 @@ function cable(id: string, template: string, def: Yaml): Cable {
   };
 }
 
-function pinNum(c: Connector, ref: string | number | null): string {
+function pinNum(c: Connector, ref: string | number): string {
   if (c.simple) return "1";
-  const byLabel = c.pins.find((p) => p.label !== "" && p.label === String(ref));
-  if (byLabel) return byLabel.num;
+  const byLabel = c.pins.filter((p) => p.label !== "" && p.label === String(ref));
+  if (byLabel.length > 1) throw new Error(`${c.id}: pin ${ref} is labelled more than once`);
+  if (byLabel.length) return byLabel[0].num;
   const byNum = c.pins.find((p) => p.num === String(ref));
   if (byNum) return byNum.num;
   throw new Error(`${c.id}: no pin ${ref}`);
 }
 
-function wireIndex(c: Cable, ref: string | number | null): number {
-  if (ref == null && c.wires.length === 1) return 1;
-  const byLabel = c.wires.find((w) => w.label !== "" && w.label === String(ref));
-  if (byLabel) return byLabel.index;
+/** A wire by colour code, then label, then number: the order the fork's connect() tries them. */
+function wireIndex(c: Cable, ref: string | number): number {
+  for (const key of ["code", "label"] as const) {
+    const hits = c.wires.filter((w) => w[key] !== "" && w[key] === String(ref));
+    if (hits.length > 1) throw new Error(`${c.id}: ${ref} names more than one wire`);
+    if (hits.length) return hits[0].index;
+  }
   const n = Number(ref);
   if (Number.isInteger(n) && n >= 1 && n <= c.wires.length) return n;
   throw new Error(`${c.id}: no wire ${ref}`);

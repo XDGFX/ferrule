@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { buildSheet, weight } from "../src/sheet.ts";
 import type { Harness } from "../src/model.ts";
 
-const pins = (n: number) => Array.from({ length: n }, (_, i) => ({ num: String(i + 1), label: `P${i + 1}` }));
+const pins = (n: number) => Array.from({ length: n }, (_, i) => ({ num: String(i + 1), label: `P${i + 1}`, colours: [] }));
 const conn = (id: string, n: number, simple = false) => ({
-  id, template: id, type: "T", subtype: "", pins: simple ? pins(1) : pins(n), simple, accent: "#888888", notes: [],
+  id, template: id, type: "T", subtype: "", pins: simple ? pins(1) : pins(n), simple, loops: [], accent: "#888888", notes: [],
 });
 
 const harness: Harness = {
@@ -13,15 +13,16 @@ const harness: Harness = {
   connectors: [conn("A", 12), conn("B", 2), conn("ISO", 1, true)],
   cables: [
     { id: "__RUN_1", template: "RUN", type: "", gauge: 50, length: "1.5 m", accent: "#888888", notes: [],
-      wires: [{ index: 1, label: "24V", colours: ["RD"] }] },
+      wires: [{ index: 1, label: "24V", code: "RD", colours: ["RD"] }] },
     { id: "TWIN", template: "TWIN", type: "Twin", gauge: 16, length: "0.75 m", accent: "#888888", notes: [],
-      wires: [{ index: 1, label: "24V", colours: ["RD"] }, { index: 2, label: "GND", colours: ["BK"] }] },
+      wires: [{ index: 1, label: "24V", code: "RD", colours: ["RD"] }, { index: 2, label: "GND", code: "BK", colours: ["BK"] }] },
   ],
   links: [
     { cable: "__RUN_1", wire: 1, from: { connector: "A", pin: "1" }, to: { connector: "ISO", pin: "1" } },
     { cable: "TWIN", wire: 1, from: { connector: "A", pin: "2" }, to: { connector: "B", pin: "1" } },
     { cable: "TWIN", wire: 2, from: { connector: "A", pin: "7" }, to: { connector: "B", pin: "2" } },
   ],
+  mates: [],
 };
 
 const sheet = buildSheet(harness);
