@@ -9,9 +9,9 @@ import type { Placement, Pt, Route } from "./types.ts";
 
 export const DOT_GRAPH = 'rankdir=LR, splines=true, nodesep=0.45, ranksep=0.9, pad=0.33';
 
-export function toDot(sheet: Sheet, graph = DOT_GRAPH): string {
+export function toDot(sheet: Sheet): string {
   const portName = new Map<string, string>();
-  const lines = [`digraph G {`, `  graph [${graph}];`, `  node [shape=plain];`, `  edge [arrowhead=none];`];
+  const lines = [`digraph G {`, `  graph [${DOT_GRAPH}];`, `  node [shape=plain];`, `  edge [arrowhead=none];`];
   for (const c of sheet.cards) lines.push(`  "${c.id}" [label=<${table(c, portName)}>];`);
   for (const w of sheet.wires) {
     const a = portName.get(`${w.from.card}/${w.from.port}`);
@@ -23,8 +23,8 @@ export function toDot(sheet: Sheet, graph = DOT_GRAPH): string {
   return lines.join("\n");
 }
 
-function box(w: number, h: number, port = ""): string {
-  return `<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0"><TR>${cell(w, h, port)}</TR></TABLE>`;
+function box(w: number, h: number): string {
+  return `<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0"><TR>${cell(w, h)}</TR></TABLE>`;
 }
 
 function cell(w: number, h: number, port = "", span = 1): string {
@@ -60,8 +60,8 @@ interface DotJson {
   edges?: { id: string; lp?: string; _draw_: { op: string; points?: [number, number][] }[] }[];
 }
 
-export function layoutDot(sheet: Sheet, graph = DOT_GRAPH): Placement {
-  const json: DotJson = JSON.parse(execFileSync("dot", ["-Tjson"], { input: toDot(sheet, graph), encoding: "utf8" }));
+export function layoutDot(sheet: Sheet): Placement {
+  const json: DotJson = JSON.parse(execFileSync("dot", ["-Tjson"], { input: toDot(sheet), encoding: "utf8" }));
   const [, , W, H] = json.bb.split(",").map(Number);
   const flip = ([x, y]: number[]): Pt => ({ x, y: H - y });
   const cards = new Map<string, Pt>();

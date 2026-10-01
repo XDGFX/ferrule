@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2825 1565" width="2825" height="1565" role="img" aria-label="main_electrical">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2839 1565" width="2839" height="1565" role="img" aria-label="main_electrical">
 <style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap");
 svg{--bg:#eef0f3;--card:#ffffff;--line:#d5d9df;--text:#1b1f24;--muted:#5e6670;--faint:#9aa1aa;--casing:#7f8792;--case-bk:#7f8792;--case-wh:#7f8792;--tag-bg:#ffffff}
 @media (prefers-color-scheme: dark){svg{--bg:#121418;--card:#1c1f25;--line:#323741;--text:#e8eaed;--muted:#9aa1ab;--faint:#626a75;--casing:#5d6570;--case-bk:#9aa1ab;--case-wh:#5d6570;--tag-bg:#23272e}}
@@ -14,7 +14,7 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .core{fill:none;stroke-linejoin:round}
 .tag{fill:var(--tag-bg);stroke:var(--line);stroke-width:1}
 .port{fill:var(--card);stroke:var(--muted);stroke-width:1.2}</style>
-<rect class="bg" width="2825" height="1565"/>
+<rect class="bg" width="2839" height="1565"/>
 <text x="24" y="36" font-size="20" font-weight="600">main_electrical</text>
 <text class="muted" x="24" y="56" font-size="11.5">main_electrical.yml · elkjs layered, orthogonal</text>
 <rect class="card" x="24" y="609" width="182" height="128" rx="9"/>
@@ -81,78 +81,78 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <text class="muted" x="1447" y="343" font-size="10">Maxi-fused input feed (M8</text>
 <text class="muted" x="1447" y="357" font-size="10">stud)</text>
 <text class="muted" x="1447" y="371" font-size="10">MIDI-fused outputs (M6 studs)</text>
-<rect class="card" x="2114" y="848" width="150" height="242" rx="9"/>
-<rect x="2126" y="860" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
-<text x="2142" y="869" font-size="13" font-weight="600">MPPT_150_45</text>
-<text class="muted" x="2126" y="887" font-size="10.5">150/45 SmartSolar MPPT</text>
-<text class="muted" x="2136" y="920.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2152" y="920.1" font-size="11.5">PV+</text>
-<line class="rule" x1="2124" y1="928" x2="2254" y2="928"/>
-<text class="muted" x="2136" y="944.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2152" y="944.1" font-size="11.5">PV-</text>
-<line class="rule" x1="2124" y1="952" x2="2254" y2="952"/>
-<text class="muted" x="2136" y="968.1" text-anchor="end" font-size="10.5">3</text>
-<text x="2152" y="968.1" font-size="11.5">BAT+</text>
-<line class="rule" x1="2124" y1="976" x2="2254" y2="976"/>
-<text class="muted" x="2136" y="992.1" text-anchor="end" font-size="10.5">4</text>
-<text x="2152" y="992.1" font-size="11.5">BAT-</text>
-<line class="rule" x1="2124" y1="1000" x2="2254" y2="1000"/>
-<text class="faint" x="2136" y="1016.1" text-anchor="end" font-size="10.5">5</text>
-<text class="faint" x="2152" y="1016.1" font-size="11.5">VEDIRECT</text>
-<line class="rule" x1="2114" y1="1024" x2="2264" y2="1024" stroke-opacity="1"/>
-<text class="muted" x="2126" y="1043" font-size="10">PV input: max 150V Voc --</text>
-<text class="muted" x="2126" y="1057" font-size="10">3x panels in series approx</text>
-<text class="muted" x="2126" y="1071" font-size="10">105V Voc, OK</text>
-<text class="muted" x="2126" y="1085" font-size="10">Max output: 45A at 24V</text>
-<rect class="card" x="2039" y="576" width="300" height="236" rx="9"/>
-<rect x="2051" y="588" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
-<text x="2067" y="597" font-size="13" font-weight="600">ORION_XS_1400</text>
-<text class="muted" x="2051" y="615" font-size="10.5">Orion XS 1400 DC-DC Charger · 12/24V universal, set to 12V in / 24V out; non-isolated</text>
-<text class="muted" x="2061" y="648.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2077" y="648.1" font-size="11.5">24V+</text>
-<line class="rule" x1="2049" y1="656" x2="2329" y2="656"/>
-<text class="muted" x="2061" y="672.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2077" y="672.1" font-size="11.5">24V-</text>
-<line class="rule" x1="2049" y1="680" x2="2329" y2="680"/>
-<text class="faint" x="2061" y="696.1" text-anchor="end" font-size="10.5">3</text>
-<text class="faint" x="2077" y="696.1" font-size="11.5">VEDIRECT</text>
-<line class="rule" x1="2039" y1="704" x2="2339" y2="704" stroke-opacity="1"/>
-<text class="muted" x="2051" y="723" font-size="10">Input side: see truck_systems.yml</text>
-<text class="muted" x="2051" y="737" font-size="10">Non-isolated: one common GND terminal shared by input</text>
-<text class="muted" x="2051" y="751" font-size="10">and output</text>
-<text class="muted" x="2051" y="765" font-size="10">Current capped at 50A: ~650W from a 12-13V alternator</text>
-<text class="muted" x="2051" y="779" font-size="10">(~23A out at 28V);</text>
-<text class="muted" x="2051" y="793" font-size="10">the full 1400W only with the future 24V alternator on the</text>
-<text class="muted" x="2051" y="807" font-size="10">input</text>
-<rect class="card" x="2039" y="132" width="150" height="128" rx="9"/>
-<rect x="2051" y="144" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
-<text x="2067" y="153" font-size="13" font-weight="600">AIR_CON</text>
-<text class="muted" x="2051" y="171" font-size="10.5">24V Air Conditioner</text>
-<text class="muted" x="2061" y="204.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2077" y="204.1" font-size="11.5">24V</text>
-<line class="rule" x1="2049" y1="212" x2="2179" y2="212"/>
-<text class="muted" x="2061" y="228.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2077" y="228.1" font-size="11.5">GND</text>
-<line class="rule" x1="2039" y1="236" x2="2189" y2="236" stroke-opacity="1"/>
-<text class="muted" x="2051" y="255" font-size="10">35A rated current at 24V</text>
-<rect class="card" x="2039" y="296" width="150" height="104" rx="9"/>
-<rect x="2051" y="308" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
-<text x="2067" y="317" font-size="13" font-weight="600">FUSE_PANEL_A</text>
-<text class="muted" x="2051" y="335" font-size="10.5">Fuse Panel</text>
-<text class="muted" x="2061" y="368.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2077" y="368.1" font-size="11.5">24V</text>
-<line class="rule" x1="2049" y1="376" x2="2179" y2="376"/>
-<text class="muted" x="2061" y="392.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2077" y="392.1" font-size="11.5">GND</text>
-<rect class="card" x="2039" y="436" width="150" height="104" rx="9"/>
-<rect x="2051" y="448" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
-<text x="2067" y="457" font-size="13" font-weight="600">FUSE_PANEL_B</text>
-<text class="muted" x="2051" y="475" font-size="10.5">Fuse Panel</text>
-<text class="muted" x="2061" y="508.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2077" y="508.1" font-size="11.5">24V</text>
-<line class="rule" x1="2049" y1="516" x2="2179" y2="516"/>
-<text class="muted" x="2061" y="532.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2077" y="532.1" font-size="11.5">GND</text>
+<rect class="card" x="2128" y="848" width="150" height="242" rx="9"/>
+<rect x="2140" y="860" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
+<text x="2156" y="869" font-size="13" font-weight="600">MPPT_150_45</text>
+<text class="muted" x="2140" y="887" font-size="10.5">150/45 SmartSolar MPPT</text>
+<text class="muted" x="2150" y="920.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2166" y="920.1" font-size="11.5">PV+</text>
+<line class="rule" x1="2138" y1="928" x2="2268" y2="928"/>
+<text class="muted" x="2150" y="944.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2166" y="944.1" font-size="11.5">PV-</text>
+<line class="rule" x1="2138" y1="952" x2="2268" y2="952"/>
+<text class="muted" x="2150" y="968.1" text-anchor="end" font-size="10.5">3</text>
+<text x="2166" y="968.1" font-size="11.5">BAT+</text>
+<line class="rule" x1="2138" y1="976" x2="2268" y2="976"/>
+<text class="muted" x="2150" y="992.1" text-anchor="end" font-size="10.5">4</text>
+<text x="2166" y="992.1" font-size="11.5">BAT-</text>
+<line class="rule" x1="2138" y1="1000" x2="2268" y2="1000"/>
+<text class="faint" x="2150" y="1016.1" text-anchor="end" font-size="10.5">5</text>
+<text class="faint" x="2166" y="1016.1" font-size="11.5">VEDIRECT</text>
+<line class="rule" x1="2128" y1="1024" x2="2278" y2="1024" stroke-opacity="1"/>
+<text class="muted" x="2140" y="1043" font-size="10">PV input: max 150V Voc --</text>
+<text class="muted" x="2140" y="1057" font-size="10">3x panels in series approx</text>
+<text class="muted" x="2140" y="1071" font-size="10">105V Voc, OK</text>
+<text class="muted" x="2140" y="1085" font-size="10">Max output: 45A at 24V</text>
+<rect class="card" x="2053" y="576" width="300" height="236" rx="9"/>
+<rect x="2065" y="588" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
+<text x="2081" y="597" font-size="13" font-weight="600">ORION_XS_1400</text>
+<text class="muted" x="2065" y="615" font-size="10.5">Orion XS 1400 DC-DC Charger · 12/24V universal, set to 12V in / 24V out; non-isolated</text>
+<text class="muted" x="2075" y="648.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2091" y="648.1" font-size="11.5">24V+</text>
+<line class="rule" x1="2063" y1="656" x2="2343" y2="656"/>
+<text class="muted" x="2075" y="672.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2091" y="672.1" font-size="11.5">24V-</text>
+<line class="rule" x1="2063" y1="680" x2="2343" y2="680"/>
+<text class="faint" x="2075" y="696.1" text-anchor="end" font-size="10.5">3</text>
+<text class="faint" x="2091" y="696.1" font-size="11.5">VEDIRECT</text>
+<line class="rule" x1="2053" y1="704" x2="2353" y2="704" stroke-opacity="1"/>
+<text class="muted" x="2065" y="723" font-size="10">Input side: see truck_systems.yml</text>
+<text class="muted" x="2065" y="737" font-size="10">Non-isolated: one common GND terminal shared by input</text>
+<text class="muted" x="2065" y="751" font-size="10">and output</text>
+<text class="muted" x="2065" y="765" font-size="10">Current capped at 50A: ~650W from a 12-13V alternator</text>
+<text class="muted" x="2065" y="779" font-size="10">(~23A out at 28V);</text>
+<text class="muted" x="2065" y="793" font-size="10">the full 1400W only with the future 24V alternator on the</text>
+<text class="muted" x="2065" y="807" font-size="10">input</text>
+<rect class="card" x="2053" y="118" width="150" height="128" rx="9"/>
+<rect x="2065" y="130" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
+<text x="2081" y="139" font-size="13" font-weight="600">AIR_CON</text>
+<text class="muted" x="2065" y="157" font-size="10.5">24V Air Conditioner</text>
+<text class="muted" x="2075" y="190.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2091" y="190.1" font-size="11.5">24V</text>
+<line class="rule" x1="2063" y1="198" x2="2193" y2="198"/>
+<text class="muted" x="2075" y="214.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2091" y="214.1" font-size="11.5">GND</text>
+<line class="rule" x1="2053" y1="222" x2="2203" y2="222" stroke-opacity="1"/>
+<text class="muted" x="2065" y="241" font-size="10">35A rated current at 24V</text>
+<rect class="card" x="2053" y="296" width="150" height="104" rx="9"/>
+<rect x="2065" y="308" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
+<text x="2081" y="317" font-size="13" font-weight="600">FUSE_PANEL_A</text>
+<text class="muted" x="2065" y="335" font-size="10.5">Fuse Panel</text>
+<text class="muted" x="2075" y="368.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2091" y="368.1" font-size="11.5">24V</text>
+<line class="rule" x1="2063" y1="376" x2="2193" y2="376"/>
+<text class="muted" x="2075" y="392.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2091" y="392.1" font-size="11.5">GND</text>
+<rect class="card" x="2053" y="436" width="150" height="104" rx="9"/>
+<rect x="2065" y="448" width="10" height="10" rx="2.5" style="fill:#9aa1aa"/>
+<text x="2081" y="457" font-size="13" font-weight="600">FUSE_PANEL_B</text>
+<text class="muted" x="2065" y="475" font-size="10.5">Fuse Panel</text>
+<text class="muted" x="2075" y="508.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2091" y="508.1" font-size="11.5">24V</text>
+<line class="rule" x1="2063" y1="516" x2="2193" y2="516"/>
+<text class="muted" x="2075" y="532.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2091" y="532.1" font-size="11.5">GND</text>
 <rect class="card" x="423" y="737" width="238" height="402" rx="9"/>
 <rect x="435" y="749" width="10" height="10" rx="2.5" style="fill:#8e939b"/>
 <text x="451" y="758" font-size="13" font-weight="600">JK_BMS</text>
@@ -245,17 +245,17 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <line class="rule" x1="1437.9" y1="612" x2="1607.9" y2="612" stroke-opacity="1"/>
 <text class="muted" x="1449.9" y="631" font-size="10">6x M8 threaded studs for</text>
 <text class="muted" x="1449.9" y="645" font-size="10">negative connections</text>
-<rect class="card" x="2515" y="848" width="286" height="128" rx="9"/>
-<rect x="2527" y="860" width="10" height="10" rx="2.5" style="fill:#f0c419"/>
-<text x="2543" y="869" font-size="13" font-weight="600">SOLAR_ARRAY</text>
-<text class="muted" x="2527" y="887" font-size="10.5">3x 440W Solar Panels · Series String, Roof-mounted</text>
-<text class="muted" x="2537" y="920.1" text-anchor="end" font-size="10.5">1</text>
-<text x="2553" y="920.1" font-size="11.5">PV+</text>
-<line class="rule" x1="2525" y1="928" x2="2791" y2="928"/>
-<text class="muted" x="2537" y="944.1" text-anchor="end" font-size="10.5">2</text>
-<text x="2553" y="944.1" font-size="11.5">PV-</text>
-<line class="rule" x1="2515" y1="952" x2="2801" y2="952" stroke-opacity="1"/>
-<text class="muted" x="2527" y="971" font-size="10">3x panels in series: Voc approx 105V (3 x 35V), Isc 16A</text>
+<rect class="card" x="2529" y="848" width="286" height="128" rx="9"/>
+<rect x="2541" y="860" width="10" height="10" rx="2.5" style="fill:#f0c419"/>
+<text x="2557" y="869" font-size="13" font-weight="600">SOLAR_ARRAY</text>
+<text class="muted" x="2541" y="887" font-size="10.5">3x 440W Solar Panels · Series String, Roof-mounted</text>
+<text class="muted" x="2551" y="920.1" text-anchor="end" font-size="10.5">1</text>
+<text x="2567" y="920.1" font-size="11.5">PV+</text>
+<line class="rule" x1="2539" y1="928" x2="2805" y2="928"/>
+<text class="muted" x="2551" y="944.1" text-anchor="end" font-size="10.5">2</text>
+<text x="2567" y="944.1" font-size="11.5">PV-</text>
+<line class="rule" x1="2529" y1="952" x2="2815" y2="952" stroke-opacity="1"/>
+<text class="muted" x="2541" y="971" font-size="10">3x panels in series: Voc approx 105V (3 x 35V), Isc 16A</text>
 <rect class="card" x="1031" y="1095" width="190" height="446" rx="9"/>
 <rect x="1043" y="1107" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
 <text x="1059" y="1116" font-size="13" font-weight="600">CERBO_GX_CAN</text>
@@ -291,56 +291,72 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <text class="muted" x="1043" y="1508" font-size="10">DVCC.</text>
 <text class="muted" x="1043" y="1522" font-size="10">Confirm 120 ohm termination at</text>
 <text class="muted" x="1043" y="1536" font-size="10">both ends of the bus.</text>
-<rect class="card" x="1699" y="716" width="276" height="104" rx="9" stroke-dasharray="5 3"/>
-<rect x="1711" y="728" width="10" height="10" rx="2.5" style="fill:#f74f43"/>
-<text x="1727" y="737" font-size="13" font-weight="600">MPPT_BAT</text>
-<text class="muted" x="1711" y="755" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 0.75 m</text>
-<rect class="card" x="1699" y="576" width="276" height="104" rx="9" stroke-dasharray="5 3"/>
-<rect x="1711" y="588" width="10" height="10" rx="2.5" style="fill:#f74f43"/>
-<text x="1727" y="597" font-size="13" font-weight="600">ORION_24V</text>
-<text class="muted" x="1711" y="615" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 0.75 m</text>
-<rect class="card" x="1743" y="132" width="188" height="104" rx="9" stroke-dasharray="5 3"/>
-<rect x="1755" y="144" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
-<text x="1771" y="153" font-size="13" font-weight="600">AIR_CON_POWER</text>
-<text class="muted" x="1755" y="171" font-size="10.5">Silicone Flexible Twin-conductor</text>
-<rect class="card" x="1708" y="296" width="258" height="104" rx="9" stroke-dasharray="5 3"/>
-<rect x="1720" y="308" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
-<text x="1736" y="317" font-size="13" font-weight="600">FUSE_PANEL_POWER_A</text>
-<text class="muted" x="1720" y="335" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 1 m</text>
-<rect class="card" x="1708" y="436" width="258" height="104" rx="9" stroke-dasharray="5 3"/>
-<rect x="1720" y="448" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
-<text x="1736" y="457" font-size="13" font-weight="600">FUSE_PANEL_POWER_B</text>
-<text class="muted" x="1720" y="475" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 1 m</text>
-<rect class="card" x="737" y="936" width="218" height="128" rx="9" stroke-dasharray="5 3"/>
+<rect class="card" x="1713" y="716" width="276" height="104" rx="9" stroke-dasharray="5 3"/>
+<rect x="1725" y="728" width="10" height="10" rx="2.5" style="fill:#f74f43"/>
+<text x="1741" y="737" font-size="13" font-weight="600">MPPT_BAT</text>
+<text class="muted" x="1725" y="755" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 0.75 m</text>
+<rect class="card" x="1713" y="576" width="276" height="104" rx="9" stroke-dasharray="5 3"/>
+<rect x="1725" y="588" width="10" height="10" rx="2.5" style="fill:#f74f43"/>
+<text x="1741" y="597" font-size="13" font-weight="600">ORION_24V</text>
+<text class="muted" x="1725" y="615" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 0.75 m</text>
+<rect class="card" x="1757" y="118" width="188" height="142" rx="9" stroke-dasharray="5 3"/>
+<rect x="1769" y="130" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
+<text x="1785" y="139" font-size="13" font-weight="600">AIR_CON_POWER</text>
+<text class="muted" x="1769" y="157" font-size="10.5">Silicone Flexible Twin-conductor</text>
+<line class="rule" x1="1757" y1="222" x2="1945" y2="222" stroke-opacity="1"/>
+<text class="muted" x="1769" y="241" font-size="10">Supplied with air conditioner,</text>
+<text class="muted" x="1769" y="255" font-size="10">verify gauge</text>
+<rect class="card" x="1722" y="296" width="258" height="104" rx="9" stroke-dasharray="5 3"/>
+<rect x="1734" y="308" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
+<text x="1750" y="317" font-size="13" font-weight="600">FUSE_PANEL_POWER_A</text>
+<text class="muted" x="1734" y="335" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 1 m</text>
+<rect class="card" x="1722" y="436" width="258" height="104" rx="9" stroke-dasharray="5 3"/>
+<rect x="1734" y="448" width="10" height="10" rx="2.5" style="fill:#69c3f3"/>
+<text x="1750" y="457" font-size="13" font-weight="600">FUSE_PANEL_POWER_B</text>
+<text class="muted" x="1734" y="475" font-size="10.5">Silicone Flexible Twin-conductor · 16 mm² · 1 m</text>
+<rect class="card" x="737" y="936" width="218" height="306" rx="9" stroke-dasharray="5 3"/>
 <rect x="749" y="948" width="10" height="10" rx="2.5" style="fill:#36b7ff"/>
 <text x="765" y="957" font-size="13" font-weight="600">BMS_CAN_CABLE</text>
 <text class="muted" x="749" y="975" font-size="10.5">Cat5e/Cat6 patch lead, self-terminated</text>
+<line class="rule" x1="737" y1="1064" x2="955" y2="1064" stroke-opacity="1"/>
+<text class="muted" x="749" y="1083" font-size="10">Self-terminated -- replaces the Victron</text>
+<text class="muted" x="749" y="1097" font-size="10">ASS030720018 pre-made cable.</text>
+<text class="muted" x="749" y="1111" font-size="10">JK BMS end: CAN-H pin 4, CAN-L pin 5,</text>
+<text class="muted" x="749" y="1125" font-size="10">GND pin 2 or 6 (meter it)</text>
+<text class="muted" x="749" y="1139" font-size="10">Cerbo GX end: CAN-H pin 7, CAN-L pin</text>
+<text class="muted" x="749" y="1153" font-size="10">8, GND pin 3</text>
+<text class="muted" x="749" y="1167" font-size="10">Not a straight-through lead: CAN</text>
+<text class="muted" x="749" y="1181" font-size="10">crosses from pins 4/5 to pins 7/8.</text>
+<text class="muted" x="749" y="1195" font-size="10">Victron Type A and Type B differ only in</text>
+<text class="muted" x="749" y="1209" font-size="10">the BMS-side GND pin,</text>
+<text class="muted" x="749" y="1223" font-size="10">6 versus 2, so that is the pin to verify</text>
+<text class="muted" x="749" y="1237" font-size="10">before crimping.</text>
 <path class="casing" d="M206,677 L435,677" stroke-width="9.7"/>
 <path class="core" d="M206,677 L435,677" stroke="#e23b3b" stroke-width="7.3"/>
 <path class="casing" d="M649,677 L965,677 Q979,677 979,663 L979,627 Q979,613 993,613 L1041.5,613" stroke-width="9.7"/>
 <path class="core" d="M649,677 L965,677 Q979,677 979,663 L979,627 Q979,613 993,613 L1041.5,613" stroke="#e23b3b" stroke-width="7.3"/>
 <path class="casing" d="M1217.5,637 L1231.3,637 Q1245,637 1245,623.3 L1245,496 Q1245,482 1259,482 L1381,482 Q1395,482 1395,468 L1395,182 Q1395,168 1409,168 L1435,168" stroke-width="9.7"/>
 <path class="core" d="M1217.5,637 L1231.3,637 Q1245,637 1245,623.3 L1245,496 Q1245,482 1259,482 L1381,482 Q1395,482 1395,468 L1395,182 Q1395,168 1409,168 L1435,168" stroke="#e23b3b" stroke-width="7.3"/>
-<path class="casing" d="M1217.5,661 L1404.5,661 Q1409,661 1409,665.5 L1409,665.5 Q1409,670 1413.5,670 L1633,670 Q1647,670 1647,684 L1647,770 Q1647,784 1661,784 L1699,784" stroke-width="7.4"/>
-<path class="core" d="M1217.5,661 L1404.5,661 Q1409,661 1409,665.5 L1409,665.5 Q1409,670 1413.5,670 L1633,670 Q1647,670 1647,684 L1647,770 Q1647,784 1661,784 L1699,784" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1975,784 L1999,784 Q2013,784 2013,798 L2013,950 Q2013,964 2027,964 L2114,964" stroke-width="7.4"/>
-<path class="core" d="M1975,784 L1999,784 Q2013,784 2013,798 L2013,950 Q2013,964 2027,964 L2114,964" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1217.5,685 L1647,685 Q1661,685 1661,671 L1661,658 Q1661,644 1675,644 L1699,644" stroke-width="7.4"/>
-<path class="core" d="M1217.5,685 L1647,685 Q1661,685 1661,671 L1661,658 Q1661,644 1675,644 L1699,644" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1975,644 L2039,644" stroke-width="7.4"/>
-<path class="core" d="M1975,644 L2039,644" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1609,216 L1625,216 Q1633,216 1633,208 L1633,208 Q1633,200 1641,200 L1743,200" stroke-width="5.4"/>
-<path class="core" d="M1609,216 L1625,216 Q1633,216 1633,208 L1633,208 Q1633,200 1641,200 L1743,200" stroke="#e23b3b" stroke-width="3"/>
-<path class="casing" d="M1931,200 L2039,200" stroke-width="5.4"/>
-<path class="core" d="M1931,200 L2039,200" stroke="#e23b3b" stroke-width="3"/>
-<path class="casing" d="M1609,240 L1661,240 Q1675,240 1675,254 L1675,350 Q1675,364 1689,364 L1708,364" stroke-width="7.4"/>
-<path class="core" d="M1609,240 L1661,240 Q1675,240 1675,254 L1675,350 Q1675,364 1689,364 L1708,364" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1966,364 L2039,364" stroke-width="7.4"/>
-<path class="core" d="M1966,364 L2039,364" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1609,264 L1647,264 Q1661,264 1661,278 L1661,490 Q1661,504 1675,504 L1708,504" stroke-width="7.4"/>
-<path class="core" d="M1609,264 L1647,264 Q1661,264 1661,278 L1661,490 Q1661,504 1675,504 L1708,504" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing" d="M1966,504 L2039,504" stroke-width="7.4"/>
-<path class="core" d="M1966,504 L2039,504" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1217.5,661 L1404.5,661 Q1409,661 1409,665.5 L1409,665.5 Q1409,670 1413.5,670 L1633,670 Q1647,670 1647,684 L1647,770 Q1647,784 1661,784 L1713,784" stroke-width="7.4"/>
+<path class="core" d="M1217.5,661 L1404.5,661 Q1409,661 1409,665.5 L1409,665.5 Q1409,670 1413.5,670 L1633,670 Q1647,670 1647,684 L1647,770 Q1647,784 1661,784 L1713,784" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1989,784 L2013,784 Q2027,784 2027,798 L2027,950 Q2027,964 2041,964 L2128,964" stroke-width="7.4"/>
+<path class="core" d="M1989,784 L2013,784 Q2027,784 2027,798 L2027,950 Q2027,964 2041,964 L2128,964" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1217.5,685 L1647,685 Q1661,685 1661,671 L1661,658 Q1661,644 1675,644 L1713,644" stroke-width="7.4"/>
+<path class="core" d="M1217.5,685 L1647,685 Q1661,685 1661,671 L1661,658 Q1661,644 1675,644 L1713,644" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1989,644 L2053,644" stroke-width="7.4"/>
+<path class="core" d="M1989,644 L2053,644" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1609,216 L1621,216 Q1633,216 1633,204 L1633,200 Q1633,186 1647,186 L1757,186" stroke-width="5.4"/>
+<path class="core" d="M1609,216 L1621,216 Q1633,216 1633,204 L1633,200 Q1633,186 1647,186 L1757,186" stroke="#e23b3b" stroke-width="3"/>
+<path class="casing" d="M1945,186 L2053,186" stroke-width="5.4"/>
+<path class="core" d="M1945,186 L2053,186" stroke="#e23b3b" stroke-width="3"/>
+<path class="casing" d="M1609,240 L1675,240 Q1689,240 1689,254 L1689,350 Q1689,364 1703,364 L1722,364" stroke-width="7.4"/>
+<path class="core" d="M1609,240 L1675,240 Q1689,240 1689,254 L1689,350 Q1689,364 1703,364 L1722,364" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1980,364 L2053,364" stroke-width="7.4"/>
+<path class="core" d="M1980,364 L2053,364" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1609,264 L1661,264 Q1675,264 1675,278 L1675,490 Q1675,504 1689,504 L1722,504" stroke-width="7.4"/>
+<path class="core" d="M1609,264 L1661,264 Q1675,264 1675,278 L1675,490 Q1675,504 1689,504 L1722,504" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing" d="M1980,504 L2053,504" stroke-width="7.4"/>
+<path class="core" d="M1980,504 L2053,504" stroke="#e23b3b" stroke-width="5"/>
 <path class="casing case-bk" d="M206,701 L218,701 Q230,701 230,713 L230,791 Q230,805 244,805 L423,805" stroke-width="8.2"/>
 <path class="core" d="M206,701 L218,701 Q230,701 230,713 L230,791 Q230,805 244,805 L423,805" stroke="#141518" stroke-width="5.8"/>
 <path class="casing case-bk" d="M206,701 L218,701 Q230,701 230,713 L230,815 Q230,829 244,829 L423,829" stroke-width="8.2"/>
@@ -351,32 +367,32 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <path class="core" d="M661,877 L1039,877" stroke="#141518" stroke-width="5.8"/>
 <path class="casing case-bk" d="M1221,445 L1395,445 Q1409,445 1409,459 L1409,466 Q1409,480 1423,480 L1437.9,480" stroke-width="7.4"/>
 <path class="core" d="M1221,445 L1395,445 Q1409,445 1409,459 L1409,466 Q1409,480 1423,480 L1437.9,480" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1607.9,504 L1633,504 Q1647,504 1647,490 L1647,402 Q1647,388 1661,388 L1708,388" stroke-width="7.4"/>
-<path class="core" d="M1607.9,504 L1633,504 Q1647,504 1647,490 L1647,402 Q1647,388 1661,388 L1708,388" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1966,388 L2039,388" stroke-width="7.4"/>
-<path class="core" d="M1966,388 L2039,388" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1607.9,528 L1708,528" stroke-width="7.4"/>
-<path class="core" d="M1607.9,528 L1708,528" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1966,528 L2039,528" stroke-width="7.4"/>
-<path class="core" d="M1966,528 L2039,528" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1607.9,504 L1647,504 Q1661,504 1661,490 L1661,402 Q1661,388 1675,388 L1722,388" stroke-width="7.4"/>
+<path class="core" d="M1607.9,504 L1647,504 Q1661,504 1661,490 L1661,402 Q1661,388 1675,388 L1722,388" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1980,388 L2053,388" stroke-width="7.4"/>
+<path class="core" d="M1980,388 L2053,388" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1607.9,528 L1722,528" stroke-width="7.4"/>
+<path class="core" d="M1607.9,528 L1722,528" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1980,528 L2053,528" stroke-width="7.4"/>
+<path class="core" d="M1980,528 L2053,528" stroke="#141518" stroke-width="5"/>
 <path class="casing case-bk" d="M1213,901 L1381,901 Q1395,901 1395,887 L1395,566 Q1395,552 1409,552 L1437.9,552" stroke-width="9.7"/>
 <path class="core" d="M1213,901 L1381,901 Q1395,901 1395,887 L1395,566 Q1395,552 1409,552 L1437.9,552" stroke="#141518" stroke-width="7.3"/>
-<path class="casing case-bk" d="M1607.9,600 L1620.4,600 Q1633,600 1633,612.6 L1633,794 Q1633,808 1647,808 L1699,808" stroke-width="7.4"/>
-<path class="core" d="M1607.9,600 L1620.4,600 Q1633,600 1633,612.6 L1633,794 Q1633,808 1647,808 L1699,808" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1975,808 L1987,808 Q1999,808 1999,820 L1999,974 Q1999,988 2013,988 L2114,988" stroke-width="7.4"/>
-<path class="core" d="M1975,808 L1987,808 Q1999,808 1999,820 L1999,974 Q1999,988 2013,988 L2114,988" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1607.9,576 L1661,576 Q1675,576 1675,590 L1675,656 Q1675,668 1687,668 L1699,668" stroke-width="7.4"/>
-<path class="core" d="M1607.9,576 L1661,576 Q1675,576 1675,590 L1675,656 Q1675,668 1687,668 L1699,668" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1975,668 L2039,668" stroke-width="7.4"/>
-<path class="core" d="M1975,668 L2039,668" stroke="#141518" stroke-width="5"/>
-<path class="casing case-bk" d="M1607.9,480 L1620.4,480 Q1633,480 1633,467.4 L1633,238 Q1633,224 1647,224 L1743,224" stroke-width="5.4"/>
-<path class="core" d="M1607.9,480 L1620.4,480 Q1633,480 1633,467.4 L1633,238 Q1633,224 1647,224 L1743,224" stroke="#141518" stroke-width="3"/>
-<path class="casing case-bk" d="M1931,224 L2039,224" stroke-width="5.4"/>
-<path class="core" d="M1931,224 L2039,224" stroke="#141518" stroke-width="3"/>
-<path class="casing" d="M2264,916 L2515,916" stroke-width="6.2"/>
-<path class="core" d="M2264,916 L2515,916" stroke="#e23b3b" stroke-width="3.8"/>
-<path class="casing case-bk" d="M2264,940 L2515,940" stroke-width="6.2"/>
-<path class="core" d="M2264,940 L2515,940" stroke="#141518" stroke-width="3.8"/>
+<path class="casing case-bk" d="M1607.9,600 L1620.4,600 Q1633,600 1633,612.6 L1633,794 Q1633,808 1647,808 L1713,808" stroke-width="7.4"/>
+<path class="core" d="M1607.9,600 L1620.4,600 Q1633,600 1633,612.6 L1633,794 Q1633,808 1647,808 L1713,808" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1989,808 L2001,808 Q2013,808 2013,820 L2013,974 Q2013,988 2027,988 L2128,988" stroke-width="7.4"/>
+<path class="core" d="M1989,808 L2001,808 Q2013,808 2013,820 L2013,974 Q2013,988 2027,988 L2128,988" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1607.9,576 L1661,576 Q1675,576 1675,590 L1675,654 Q1675,668 1689,668 L1713,668" stroke-width="7.4"/>
+<path class="core" d="M1607.9,576 L1661,576 Q1675,576 1675,590 L1675,654 Q1675,668 1689,668 L1713,668" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1989,668 L2053,668" stroke-width="7.4"/>
+<path class="core" d="M1989,668 L2053,668" stroke="#141518" stroke-width="5"/>
+<path class="casing case-bk" d="M1607.9,480 L1633,480 Q1647,480 1647,466 L1647,224 Q1647,210 1661,210 L1757,210" stroke-width="5.4"/>
+<path class="core" d="M1607.9,480 L1633,480 Q1647,480 1647,466 L1647,224 Q1647,210 1661,210 L1757,210" stroke="#141518" stroke-width="3"/>
+<path class="casing case-bk" d="M1945,210 L2053,210" stroke-width="5.4"/>
+<path class="core" d="M1945,210 L2053,210" stroke="#141518" stroke-width="3"/>
+<path class="casing" d="M2278,916 L2529,916" stroke-width="6.2"/>
+<path class="core" d="M2278,916 L2529,916" stroke="#e23b3b" stroke-width="3.8"/>
+<path class="casing case-bk" d="M2278,940 L2529,940" stroke-width="6.2"/>
+<path class="core" d="M2278,940 L2529,940" stroke="#141518" stroke-width="3.8"/>
 <path class="casing" d="M661,901 L699,901 Q713,901 713,915 L713,992 Q713,1004 725,1004 L737,1004" stroke-width="5.4"/>
 <path class="core" d="M661,901 L699,901 Q713,901 713,915 L713,992 Q713,1004 725,1004 L737,1004" stroke="#f0c419" stroke-width="3"/>
 <path class="casing" d="M955,1004 L993,1004 Q1007,1004 1007,1018 L1007,1175 Q1007,1187 1019,1187 L1031,1187" stroke-width="5.4"/>
@@ -389,26 +405,26 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <path class="core" d="M661,949 L673,949 Q685,949 685,961 L685,1038 Q685,1052 699,1052 L737,1052" stroke="#f3f3f1" stroke-width="3"/>
 <path class="casing case-wh" d="M955,1052 L979,1052 Q993,1052 993,1066 L993,1149 Q993,1163 1007,1163 L1031,1163" stroke-width="5.4"/>
 <path class="core" d="M955,1052 L979,1052 Q993,1052 993,1066 L993,1149 Q993,1163 1007,1163 L1031,1163" stroke="#f3f3f1" stroke-width="3"/>
-<path class="casing" d="M1699,784 L1975,784" stroke-width="7.4"/>
-<path class="core" d="M1699,784 L1975,784" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing case-bk" d="M1699,808 L1975,808" stroke-width="7.4"/>
-<path class="core" d="M1699,808 L1975,808" stroke="#141518" stroke-width="5"/>
-<path class="casing" d="M1699,644 L1975,644" stroke-width="7.4"/>
-<path class="core" d="M1699,644 L1975,644" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing case-bk" d="M1699,668 L1975,668" stroke-width="7.4"/>
-<path class="core" d="M1699,668 L1975,668" stroke="#141518" stroke-width="5"/>
-<path class="casing" d="M1743,200 L1931,200" stroke-width="5.4"/>
-<path class="core" d="M1743,200 L1931,200" stroke="#e23b3b" stroke-width="3"/>
-<path class="casing case-bk" d="M1743,224 L1931,224" stroke-width="5.4"/>
-<path class="core" d="M1743,224 L1931,224" stroke="#141518" stroke-width="3"/>
-<path class="casing" d="M1708,364 L1966,364" stroke-width="7.4"/>
-<path class="core" d="M1708,364 L1966,364" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing case-bk" d="M1708,388 L1966,388" stroke-width="7.4"/>
-<path class="core" d="M1708,388 L1966,388" stroke="#141518" stroke-width="5"/>
-<path class="casing" d="M1708,504 L1966,504" stroke-width="7.4"/>
-<path class="core" d="M1708,504 L1966,504" stroke="#e23b3b" stroke-width="5"/>
-<path class="casing case-bk" d="M1708,528 L1966,528" stroke-width="7.4"/>
-<path class="core" d="M1708,528 L1966,528" stroke="#141518" stroke-width="5"/>
+<path class="casing" d="M1713,784 L1989,784" stroke-width="7.4"/>
+<path class="core" d="M1713,784 L1989,784" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing case-bk" d="M1713,808 L1989,808" stroke-width="7.4"/>
+<path class="core" d="M1713,808 L1989,808" stroke="#141518" stroke-width="5"/>
+<path class="casing" d="M1713,644 L1989,644" stroke-width="7.4"/>
+<path class="core" d="M1713,644 L1989,644" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing case-bk" d="M1713,668 L1989,668" stroke-width="7.4"/>
+<path class="core" d="M1713,668 L1989,668" stroke="#141518" stroke-width="5"/>
+<path class="casing" d="M1757,186 L1945,186" stroke-width="5.4"/>
+<path class="core" d="M1757,186 L1945,186" stroke="#e23b3b" stroke-width="3"/>
+<path class="casing case-bk" d="M1757,210 L1945,210" stroke-width="5.4"/>
+<path class="core" d="M1757,210 L1945,210" stroke="#141518" stroke-width="3"/>
+<path class="casing" d="M1722,364 L1980,364" stroke-width="7.4"/>
+<path class="core" d="M1722,364 L1980,364" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing case-bk" d="M1722,388 L1980,388" stroke-width="7.4"/>
+<path class="core" d="M1722,388 L1980,388" stroke="#141518" stroke-width="5"/>
+<path class="casing" d="M1722,504 L1980,504" stroke-width="7.4"/>
+<path class="core" d="M1722,504 L1980,504" stroke="#e23b3b" stroke-width="5"/>
+<path class="casing case-bk" d="M1722,528 L1980,528" stroke-width="7.4"/>
+<path class="core" d="M1722,528 L1980,528" stroke="#141518" stroke-width="5"/>
 <path class="casing" d="M737,1004 L955,1004" stroke-width="5.4"/>
 <path class="core" d="M737,1004 L955,1004" stroke="#f0c419" stroke-width="3"/>
 <path class="casing" d="M737,1028 L955,1028" stroke-width="5.4"/>
@@ -422,15 +438,15 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <circle class="port" cx="1217.5" cy="637" r="3.2"/>
 <circle class="port" cx="1435" cy="168" r="3.2"/>
 <circle class="port" cx="1217.5" cy="661" r="3.2"/>
-<circle class="port" cx="2114" cy="964" r="3.2"/>
+<circle class="port" cx="2128" cy="964" r="3.2"/>
 <circle class="port" cx="1217.5" cy="685" r="3.2"/>
-<circle class="port" cx="2039" cy="644" r="3.2"/>
+<circle class="port" cx="2053" cy="644" r="3.2"/>
 <circle class="port" cx="1609" cy="216" r="3.2"/>
-<circle class="port" cx="2039" cy="200" r="3.2"/>
+<circle class="port" cx="2053" cy="186" r="3.2"/>
 <circle class="port" cx="1609" cy="240" r="3.2"/>
-<circle class="port" cx="2039" cy="364" r="3.2"/>
+<circle class="port" cx="2053" cy="364" r="3.2"/>
 <circle class="port" cx="1609" cy="264" r="3.2"/>
-<circle class="port" cx="2039" cy="504" r="3.2"/>
+<circle class="port" cx="2053" cy="504" r="3.2"/>
 <circle class="port" cx="206" cy="701" r="3.2"/>
 <circle class="port" cx="423" cy="805" r="3.2"/>
 <circle class="port" cx="423" cy="829" r="3.2"/>
@@ -440,21 +456,21 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <circle class="port" cx="1221" cy="445" r="3.2"/>
 <circle class="port" cx="1437.9" cy="480" r="3.2"/>
 <circle class="port" cx="1607.9" cy="504" r="3.2"/>
-<circle class="port" cx="2039" cy="388" r="3.2"/>
+<circle class="port" cx="2053" cy="388" r="3.2"/>
 <circle class="port" cx="1607.9" cy="528" r="3.2"/>
-<circle class="port" cx="2039" cy="528" r="3.2"/>
+<circle class="port" cx="2053" cy="528" r="3.2"/>
 <circle class="port" cx="1213" cy="901" r="3.2"/>
 <circle class="port" cx="1437.9" cy="552" r="3.2"/>
 <circle class="port" cx="1607.9" cy="600" r="3.2"/>
-<circle class="port" cx="2114" cy="988" r="3.2"/>
+<circle class="port" cx="2128" cy="988" r="3.2"/>
 <circle class="port" cx="1607.9" cy="576" r="3.2"/>
-<circle class="port" cx="2039" cy="668" r="3.2"/>
+<circle class="port" cx="2053" cy="668" r="3.2"/>
 <circle class="port" cx="1607.9" cy="480" r="3.2"/>
-<circle class="port" cx="2039" cy="224" r="3.2"/>
-<circle class="port" cx="2264" cy="916" r="3.2"/>
-<circle class="port" cx="2515" cy="916" r="3.2"/>
-<circle class="port" cx="2264" cy="940" r="3.2"/>
-<circle class="port" cx="2515" cy="940" r="3.2"/>
+<circle class="port" cx="2053" cy="210" r="3.2"/>
+<circle class="port" cx="2278" cy="916" r="3.2"/>
+<circle class="port" cx="2529" cy="916" r="3.2"/>
+<circle class="port" cx="2278" cy="940" r="3.2"/>
+<circle class="port" cx="2529" cy="940" r="3.2"/>
 <circle class="port" cx="661" cy="901" r="3.2"/>
 <circle class="port" cx="1031" cy="1187" r="3.2"/>
 <circle class="port" cx="661" cy="925" r="3.2"/>
@@ -479,34 +495,34 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 <text x="1328" y="462.1" text-anchor="middle" font-size="10" font-weight="500">16 mm² · 1.5 m</text>
 <rect class="tag" x="1285" y="906" width="86" height="17" rx="8.5"/>
 <text x="1328" y="918.1" text-anchor="middle" font-size="10" font-weight="500">50 mm² · 0.1 m</text>
-<rect class="tag" x="2403" y="894" width="48" height="17" rx="8.5"/>
-<text x="2427" y="906.1" text-anchor="middle" font-size="10" font-weight="500">6 mm²</text>
-<rect class="tag" x="2403" y="945" width="48" height="17" rx="8.5"/>
-<text x="2427" y="957.1" text-anchor="middle" font-size="10" font-weight="500">6 mm²</text>
-<rect class="tag" x="1819.2" y="775.5" width="35.7" height="17" rx="8.5"/>
-<text x="1837" y="787.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
-<rect class="tag" x="1817.9" y="799.5" width="38.3" height="17" rx="8.5"/>
-<text x="1837" y="811.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
-<rect class="tag" x="1819.2" y="635.5" width="35.7" height="17" rx="8.5"/>
-<text x="1837" y="647.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
-<rect class="tag" x="1817.9" y="659.5" width="38.3" height="17" rx="8.5"/>
-<text x="1837" y="671.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
-<rect class="tag" x="1819.2" y="191.5" width="35.7" height="17" rx="8.5"/>
-<text x="1837" y="203.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
-<rect class="tag" x="1817.9" y="215.5" width="38.3" height="17" rx="8.5"/>
-<text x="1837" y="227.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
-<rect class="tag" x="1819.2" y="355.5" width="35.7" height="17" rx="8.5"/>
-<text x="1837" y="367.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
-<rect class="tag" x="1817.9" y="379.5" width="38.3" height="17" rx="8.5"/>
-<text x="1837" y="391.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
-<rect class="tag" x="1819.2" y="495.5" width="35.7" height="17" rx="8.5"/>
-<text x="1837" y="507.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
-<rect class="tag" x="1817.9" y="519.5" width="38.3" height="17" rx="8.5"/>
-<text x="1837" y="531.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
-<rect class="tag" x="821" y="995.5" width="50.1" height="17" rx="8.5"/>
+<rect class="tag" x="2417" y="894" width="48" height="17" rx="8.5"/>
+<text x="2441" y="906.1" text-anchor="middle" font-size="10" font-weight="500">6 mm²</text>
+<rect class="tag" x="2417" y="945" width="48" height="17" rx="8.5"/>
+<text x="2441" y="957.1" text-anchor="middle" font-size="10" font-weight="500">6 mm²</text>
+<rect class="tag" x="1833" y="775.5" width="36" height="17" rx="8.5"/>
+<text x="1851" y="787.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
+<rect class="tag" x="1831.5" y="799.5" width="39" height="17" rx="8.5"/>
+<text x="1851" y="811.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
+<rect class="tag" x="1833" y="635.5" width="36" height="17" rx="8.5"/>
+<text x="1851" y="647.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
+<rect class="tag" x="1831.5" y="659.5" width="39" height="17" rx="8.5"/>
+<text x="1851" y="671.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
+<rect class="tag" x="1833" y="177.5" width="36" height="17" rx="8.5"/>
+<text x="1851" y="189.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
+<rect class="tag" x="1831.5" y="201.5" width="39" height="17" rx="8.5"/>
+<text x="1851" y="213.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
+<rect class="tag" x="1833" y="355.5" width="36" height="17" rx="8.5"/>
+<text x="1851" y="367.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
+<rect class="tag" x="1831.5" y="379.5" width="39" height="17" rx="8.5"/>
+<text x="1851" y="391.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
+<rect class="tag" x="1833" y="495.5" width="36" height="17" rx="8.5"/>
+<text x="1851" y="507.6" text-anchor="middle" font-size="10" font-weight="500">24V</text>
+<rect class="tag" x="1831.5" y="519.5" width="39" height="17" rx="8.5"/>
+<text x="1851" y="531.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
+<rect class="tag" x="820.5" y="995.5" width="51" height="17" rx="8.5"/>
 <text x="846" y="1007.6" text-anchor="middle" font-size="10" font-weight="500">CAN_H</text>
-<rect class="tag" x="821.9" y="1019.5" width="48.3" height="17" rx="8.5"/>
+<rect class="tag" x="821.5" y="1019.5" width="49" height="17" rx="8.5"/>
 <text x="846" y="1031.6" text-anchor="middle" font-size="10" font-weight="500">CAN_L</text>
-<rect class="tag" x="826.9" y="1043.5" width="38.3" height="17" rx="8.5"/>
+<rect class="tag" x="826.5" y="1043.5" width="39" height="17" rx="8.5"/>
 <text x="846" y="1055.6" text-anchor="middle" font-size="10" font-weight="500">GND</text>
 </svg>

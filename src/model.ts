@@ -34,6 +34,7 @@ export interface Cable {
   length: string;
   wires: CableWire[];
   accent: string;
+  notes: string[];
 }
 
 export interface End {

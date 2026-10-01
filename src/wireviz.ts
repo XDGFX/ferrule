@@ -113,6 +113,7 @@ function cable(id: string, template: string, def: Yaml): Cable {
       colours: colours[i] ? stripes(colours[i]) : [],
     })),
     accent: hex(def.bgcolor_title ?? def.bgcolor),
+    notes: lines(def.notes),
   };
 }
 

@@ -12,9 +12,9 @@ const harness: Harness = {
   title: "t",
   connectors: [conn("A", 12), conn("B", 2), conn("ISO", 1, true)],
   cables: [
-    { id: "__RUN_1", template: "RUN", type: "", gauge: 50, length: "1.5 m", accent: "#888888",
+    { id: "__RUN_1", template: "RUN", type: "", gauge: 50, length: "1.5 m", accent: "#888888", notes: [],
       wires: [{ index: 1, label: "24V", colours: ["RD"] }] },
-    { id: "TWIN", template: "TWIN", type: "Twin", gauge: 16, length: "0.75 m", accent: "#888888",
+    { id: "TWIN", template: "TWIN", type: "Twin", gauge: 16, length: "0.75 m", accent: "#888888", notes: [],
       wires: [{ index: 1, label: "24V", colours: ["RD"] }, { index: 2, label: "GND", colours: ["BK"] }] },
   ],
   links: [
@@ -63,4 +63,19 @@ test("line weight grows with conductor size", () => {
   assert.ok(weight(50) > weight(16));
   assert.ok(weight(16) > weight(0.75));
   assert.equal(weight(null), weight(0.75));
+});
+
+test("tag sizes drop trailing zeros and a bare decimal point", () => {
+  const spec = (gauge: number) => {
+    const h: Harness = { ...harness, cables: [{ ...harness.cables[0], gauge, length: "" }], links: [harness.links[0]] };
+    return buildSheet(h).wires[0].tag?.text;
+  };
+  assert.equal(spec(1.5), "1.5 mm²");
+  assert.equal(spec(2.001), "2 mm²");
+  assert.equal(spec(0.823), "0.82 mm²");
+});
+
+test("a cable card carries its notes", () => {
+  const h: Harness = { ...harness, cables: harness.cables.map((c) => (c.id === "TWIN" ? { ...c, notes: ["Verify gauge"] } : c)) };
+  assert.deepEqual(buildSheet(h).cards.find((c) => c.id === "TWIN")!.notes, ["Verify gauge"]);
 });

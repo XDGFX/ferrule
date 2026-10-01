@@ -119,3 +119,8 @@ test("an unknown pin is an error, not a silent gap", () => {
   const bad = loom.replace("SHUNT: [LOAD-]", "SHUNT: [NOPE]");
   assert.throws(() => readWireviz([shared, bad], "x"), /SHUNT.*NOPE/);
 });
+
+test("cable notes are read", () => {
+  const withNotes = loom.replace('    wirelabels: ["24V", "GND"]\n', '    wirelabels: ["24V", "GND"]\n    notes: |\n      Verify gauge\n');
+  assert.deepEqual(readWireviz([shared, withNotes], "x").cables.find((c) => c.id === "TWIN")!.notes, ["Verify gauge"]);
+});

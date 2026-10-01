@@ -25,12 +25,12 @@ const looms = positionals.length ? positionals : ["main_electrical"];
 const outDir = new URL("../docs/spike/", import.meta.url);
 mkdirSync(outDir, { recursive: true });
 
-const electrical = values.dir!;
-const shared = readFileSync(`${electrical}/shared.yml`, "utf8");
+const dir = values.dir!;
+const shared = readFileSync(`${dir}/shared.yml`, "utf8");
 const report: string[] = [];
 
 for (const loom of looms) {
-  const harness = readWireviz([shared, readFileSync(`${electrical}/src/${loom}.yml`, "utf8")], loom);
+  const harness = readWireviz([shared, readFileSync(`${dir}/src/${loom}.yml`, "utf8")], loom);
   const sheet = buildSheet(harness);
 
   const t0 = performance.now();

@@ -4,8 +4,7 @@
 
 import { WIRE } from "./colours.ts";
 import type { Placement, Pt, Route } from "./layout/types.ts";
-import { textWidth } from "./measure.ts";
-import { STYLE as S, type Card, type Sheet, type Wire } from "./sheet.ts";
+import { STYLE as S, tagWidth, type Card, type Sheet, type Wire } from "./sheet.ts";
 
 export const THEMES = {
   light: {
@@ -18,7 +17,8 @@ export const THEMES = {
   },
 } as const;
 
-const HEAD = 76;
+/** Height of the band above the layout that holds the sheet's title and caption. */
+const TITLE_BAND = 76;
 const RADIUS = 9;
 const FILLET = 14;
 const CASING = 1.2;
@@ -46,13 +46,13 @@ const n = (v: number) => String(Math.round(v * 10) / 10);
 
 export function render(sheet: Sheet, place: Placement, caption: string): string {
   const W = Math.ceil(place.width);
-  const H = Math.ceil(place.height) + HEAD;
+  const H = Math.ceil(place.height) + TITLE_BAND;
   const cards = new Map(sheet.cards.map((c) => [c.id, c]));
   const at = (id: string) => {
     const p = place.cards.get(id)!;
-    return { x: p.x, y: p.y + HEAD };
+    return { x: p.x, y: p.y + TITLE_BAND };
   };
-  const shift = (p: Pt) => ({ x: p.x, y: p.y + HEAD });
+  const shift = (p: Pt) => ({ x: p.x, y: p.y + TITLE_BAND });
 
   const o: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(sheet.title)}">`,
@@ -84,8 +84,7 @@ export function render(sheet: Sheet, place: Placement, caption: string): string 
       if (!wire) return;
       o.push(...drawWire(`M${n(p.x)},${n(y)} L${n(p.x + c.w)},${n(y)}`, wire));
       const label = row.label || row.num;
-      const lw = textWidth(label, S.tagSize, 500) + 16;
-      tags.push(...drawTag({ x: p.x + c.w / 2, y }, label, lw));
+      tags.push(...drawTag({ x: p.x + c.w / 2, y }, label, tagWidth(label)));
     });
   }
   o.push(...new Set(ports), ...tags, "</svg>");
@@ -99,9 +98,8 @@ function drawCard(c: Card, p: Pt): string[] {
   o.push(`<rect x="${n(p.x + 12)}" y="${n(p.y + 12)}" width="10" height="10" rx="2.5" style="fill:${c.accent}"/>`);
   o.push(`<text x="${n(p.x + 28)}" y="${n(p.y + 21)}" font-size="${S.titleSize}" font-weight="600">${esc(c.title)}</text>`);
   if (c.sub) o.push(`<text class="muted" x="${n(p.x + 12)}" y="${n(p.y + 39)}" font-size="${S.subSize}">${esc(c.sub)}</text>`);
-  if (c.kind === "cable") return o;
-
-  c.rows.forEach((r, i) => {
+  // A cable card's rows are drawn later, over the cores that pass through it.
+  if (c.kind !== "cable") c.rows.forEach((r, i) => {
     const ry = p.y + c.rowTop + i * c.rowH;
     const base = ry + c.rowH / 2 + S.rowSize * 0.36;
     if (i) o.push(`<line class="rule" x1="${n(p.x + 10)}" y1="${n(ry)}" x2="${n(p.x + c.w - 10)}" y2="${n(ry)}"/>`);

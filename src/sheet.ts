@@ -27,8 +27,6 @@ export interface Row {
   key: string;
   num: string;
   label: string;
-  /** Wire colours drawn as a swatch, for cable cores. */
-  colours?: string[];
   /** Set on a row that stands in for a run of unused pins. */
   fold?: string;
 }
@@ -123,13 +121,23 @@ export function buildSheet(h: Harness): Sheet {
 }
 
 function tag(c: Cable): Tag | undefined {
-  const text = [c.gauge == null ? "" : `${fmt(c.gauge)} mm²`, c.length].filter(Boolean).join(" · ");
+  const text = cableSpec(c);
   if (!text) return undefined;
-  return { text, w: Math.ceil(textWidth(text, STYLE.tagSize, 500) + 16), h: STYLE.tagH };
+  return { text, w: tagWidth(text), h: STYLE.tagH };
+}
+
+/** Width of a pill-shaped tag holding `text`. */
+export function tagWidth(text: string): number {
+  return Math.ceil(textWidth(text, STYLE.tagSize, 500) + 16);
+}
+
+/** Size and length, such as `50 mm² · 1.5 m`, leaving out whichever the YAML doesn't give. */
+function cableSpec(c: Cable): string {
+  return [c.gauge == null ? "" : `${fmt(c.gauge)} mm²`, c.length].filter(Boolean).join(" · ");
 }
 
 function fmt(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, "");
+  return String(Number(n.toFixed(2)));
 }
 
 function connectorCard(c: Connector, used: Map<string, Set<Side>>): Card {
@@ -163,10 +171,9 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>): Card {
 
 function cableCard(c: Cable, used: Map<string, Set<Side>>): Card {
   const title = c.id.startsWith("__") ? c.template : c.id;
-  const spec = [c.gauge == null ? "" : `${fmt(c.gauge)} mm²`, c.length].filter(Boolean).join(" · ");
-  const sub = [c.type, spec].filter(Boolean).join(" · ");
-  const rows = c.wires.map((w) => ({ key: String(w.index), num: String(w.index), label: w.label, colours: w.colours }));
-  return finish(base(c.id, "cable", title, sub, c.accent, 0, rows, []), used);
+  const sub = [c.type, cableSpec(c)].filter(Boolean).join(" · ");
+  const rows = c.wires.map((w) => ({ key: String(w.index), num: String(w.index), label: w.label }));
+  return finish(base(c.id, "cable", title, sub, c.accent, 0, rows, c.notes), used);
 }
 
 function base(id: string, kind: Card["kind"], title: string, sub: string, accent: string, w: number, rows: Row[], notes: string[]): Card {

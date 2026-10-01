@@ -12,27 +12,33 @@ alone. [RESULTS.md](RESULTS.md) has the numbers. `main_electrical-elk.svg` and
 
 ## Verdict: go
 
-elkjs is good enough to build on. On this sheet it matches dot on crossings (12 each). Neither
-engine puts a wire through a card or a tag over anything. ELK's output is byte-identical between
-runs. It lays out in about 120 ms.
+elkjs is good enough to build on. On this sheet it has 12 crossings to dot's 14, and neither
+engine puts a wire through a card or a tag over anything. Two runs of ELK produce byte-identical
+SVGs. A layout takes 100 to 250 ms.
 
 | | elkjs | dot |
 |---|---|---|
 | Orthogonal, filleted wires | yes | no: splines, and `splines=ortho` ignores ports |
-| Same bytes on every machine | yes: pure JavaScript, fixed seed, bundled font metrics | only if every machine has the same Graphviz build |
-| Crossings | 12 | 12 |
-| Canvas | 2825 × 1489 | 2397 × 1439 |
-| Total wire length | 9690 px | 7874 px |
+| Same bytes across runs | yes, checked | yes |
+| Same bytes across machines | expected: pure JavaScript, fixed seed, bundled font metrics. Not yet checked on a second platform | only with the same Graphviz build everywhere |
+| Crossings | 12 | 14 |
+| Canvas | 2839 × 1489 | 2397 × 1500 |
+| Total wire length | 9858 px | 7874 px |
 
-**What ELK costs.** The canvas is about 18% wider and the wires are about 23% longer. Inline
+**What ELK costs.** The canvas is about 18% wider and the wires are about 25% longer. Inline
 tags take a slot of their own between layers, which widens each gap. Two wires converging on one
 port, such as both BMS P terminals to the shunt's BATT-, meet with a small jog rather than merging
 cleanly. Neither problem gets in the way of reading the sheet.
 
-**Tried and rejected.** Brandes–Köpf and linear-segments node placement, longest-path and
-Coffman–Graham layering, ignoring model order, and tighter spacing. The defaults in
-`src/layout/elk.ts` (network-simplex placement, model order respected) scored best overall.
-Tighter spacing saves 4% of width but adds two crossings.
+**How far to trust the crossing count.** It counts proper intersections only. Wires that run
+along each other, or share a channel, are not counted. Orthogonal routing produces more of those
+than splines do, so the count flatters ELK somewhat.
+
+**Variants.** `node spike/variants.ts` runs the other option sets against the same sheet:
+Brandes–Köpf and linear-segments node placement, longest-path and Coffman–Graham layering,
+ignoring model order, and tighter spacing. None beats the defaults in `src/layout/elk.ts`
+(network-simplex placement, model order respected) on length and crossings together. Tighter
+spacing is 4% narrower at no cost in crossings, so it is worth tuning during parity.
 
 ## Carried into parity
 
@@ -41,9 +47,14 @@ Tighter spacing saves 4% of width but adds two crossings.
   keys, which WireViz's YAML loader tolerates.
 - Text is measured glyph by glyph with opentype.js, which skips Inter's GPOS kerning, so widths
   come out slightly wide. Shaping with HarfBuzz would fix this.
+- The SVG loads Inter from Google Fonts with `@import`. A viewer that blocks the import, such as
+  resvg or an `<img>` tag, falls back to Helvetica or Arial, and card widths are measured for
+  Inter. Embed the font as a subset `@font-face` instead.
+- resvg needs Inter as a TTF to render PNGs in Inter, and `@fontsource` ships only WOFF.
 - Long notes make tall cards, which stretch their layer. The Cerbo card is 15 lines. Cap the
   notes, or move them into a footnote.
-- PNGs are rendered with resvg from a flattened SVG for each theme. resvg falls back to a system
-  font unless Inter is passed to it as a TTF, and `@fontsource` ships only WOFF.
+- The light theme's black and white casings are the same grey as every other casing, carried over
+  unchanged from the approved mock-up. This sheet has no two-colour wire, so the tracer went
+  unexercised. Both need checking on a loom that has them.
 
 Regenerate with `npm run spike -- --dir <wireviz project> --png out`.
