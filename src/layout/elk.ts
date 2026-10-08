@@ -66,9 +66,29 @@ function pairs(sheet: Sheet): Pair[] {
   return out;
 }
 
-// No wrapping into rows. ELK's own cut tends to fall through a multi-core cable, which sends a
-// ribbon of wires round the sheet's edge, and that reads worse than a wide sheet. elkjs can't take
-// a hand-picked cut either: it can't deserialise the list option. A wide sheet stays one row.
+/**
+ * Options that wrap a long sheet into rows, aiming for `aspect` as width over height. Applied only
+ * when the sheet's YAML sets `diagram.wrap`.
+ *
+ * MULTI_EDGE lets a cut fall anywhere, where SINGLE_EDGE throws when no layer boundary is crossed
+ * by exactly one edge, as in any plan with a tee. Then ELK moves each cut to the boundary crossed
+ * by the fewest wires: a distance penalty below 1 lets it travel as far as it must to find one,
+ * where ELK's default of 2 leaves it cutting through a fan of four or five pipes. A wrapped wire
+ * gets the same clearance from its neighbours as any other.
+ */
+export function wrapOptions(aspect: number): Record<string, string> {
+  return {
+    "elk.layered.wrapping.strategy": "MULTI_EDGE",
+    "elk.aspectRatio": String(aspect),
+    "elk.layered.wrapping.multiEdge.distancePenalty": "0.5",
+    "elk.layered.wrapping.additionalEdgeSpacing": ELK_OPTIONS["elk.spacing.edgeEdge"],
+  };
+}
+
+// Wrapping into rows is opt-in, per diagram. A cut through a multi-core cable sends a ribbon of
+// wires round the sheet's edge, and in a loom nearly every boundary crosses one, so a wide loom
+// usually reads better as one row. A pipe run is one line, so most plumbing plans fold cleanly.
+// elkjs can't take a hand-picked cut: it can't deserialise the list option.
 export async function layoutElk(sheet: Sheet, options: Record<string, string> = {}): Promise<Placement> {
   const paired = pairs(sheet);
   const inPair = new Set(paired.flatMap((p) => [p.a.id, p.b.id]));
@@ -92,7 +112,7 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
   }));
   const graph: ElkNode = {
     id: "root",
-    layoutOptions: { ...ELK_OPTIONS, ...options },
+    layoutOptions: { ...ELK_OPTIONS, ...(sheet.wrap ? wrapOptions(sheet.wrap) : {}), ...options },
     children: [
       ...sheet.cards.filter((c) => !inPair.has(c.id)).map((c) => ({
         id: c.id,

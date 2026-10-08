@@ -57,6 +57,23 @@ an error. ferrule is a little stricter: only a pipe may carry `^`, a chain turns
 a pipe takes no instance. Legacy `edges` and pipeviz's `--combined` sheet are not read. The
 `md` tables are written for wiring and read poorly for plumbing.
 
+**Wrapping into rows** is off by default, so a long sheet stays one wide row. A diagram can ask
+for rows in its YAML, in a loom or a plumbing plan, or in a prepended file:
+
+```yaml
+diagram:
+  wrap: true          # aim for a sheet 1.6 times as wide as it is tall
+  # wrap:
+  #   aspect: 4       # or name the ratio: higher folds less
+```
+
+ferrule folds the sheet where the fewest lines cross, and carries those lines round to the start
+of the next row. A pipe run is one line, so a long plumbing chain usually folds through a single
+pipe ahead of its first tee. Looms rarely have such a place: most boundaries cross a multi-core
+cable, so a wrapped loom sends a ribbon of cores round the sheet and reads worse than a wide one.
+The aspect is a target, not a promise. A plan whose only narrow point is its last pipe leaves one
+part alone on the last row; raise `aspect` until it doesn't.
+
 **Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
 loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate
 or loop.
