@@ -10,7 +10,7 @@
 
 import { parse } from "yaml";
 import { hex, stripes } from "./colours.ts";
-import type { Cable, Connector, End, Harness, Link } from "./model.ts";
+import { readWrap, type Cable, type Connector, type End, type Harness, type Link } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
@@ -118,12 +118,14 @@ export function readPipeviz(sources: string[], name: string): Harness {
     if (m && (fresh.get(c.template) ?? 0) > 1) c.label += ` · ${m[1]}`;
   }
 
+  const wrap = readWrap(diagram.wrap);
   return {
     title: diagram.title == null ? titleCase(name) : String(diagram.title),
     connectors: [...connectors.values()],
     cables,
     links,
     mates: [],
+    ...(wrap ? { wrap } : {}),
   };
 }
 

@@ -8,7 +8,7 @@
 
 import { parse } from "yaml";
 import { hex, stripes } from "./colours.ts";
-import type { Cable, Connector, End, Harness, Link, Mate } from "./model.ts";
+import { readWrap, type Cable, type Connector, type End, type Harness, type Link, type Mate } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
@@ -97,7 +97,8 @@ export function readWireviz(sources: string[], title: string): Harness {
     return { ...instance(designator), ref };
   }
 
-  return { title, connectors: [...connectors.values()], cables: [...cables.values()], links, mates };
+  const wrap = readWrap(doc.diagram?.wrap);
+  return { title, connectors: [...connectors.values()], cables: [...cables.values()], links, mates, ...(wrap ? { wrap } : {}) };
 }
 
 /** One cell of a connection set: a component, or an arrow, and what it references in this row. */

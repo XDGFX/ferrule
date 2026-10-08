@@ -76,9 +76,35 @@ export interface Harness {
   links: Link[];
   /** Connectors mated as a whole, such as the two halves of an inline plug. */
   mates: Mate[];
+  /**
+   * The aspect ratio to aim for when the sheet wraps into rows, from the YAML's `diagram.wrap`.
+   * Absent, the sheet stays one row.
+   */
+  wrap?: number;
 }
 
 export interface Mate {
   from: string;
   to: string;
+}
+
+/** The aspect ratio a sheet aims for when it wraps into rows and its YAML names none. */
+export const WRAP_ASPECT = 1.6;
+
+/**
+ * Reads a diagram's `wrap` option: absent or false keeps the sheet in one row, true wraps it at
+ * the default aspect ratio, and `{ aspect: 2 }` aims for that width over height instead.
+ */
+export function readWrap(value: unknown): number | undefined {
+  if (value == null || value === false) return undefined;
+  if (value === true) return WRAP_ASPECT;
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const { aspect, ...rest } = value as Record<string, unknown>;
+    const extra = Object.keys(rest);
+    if (extra.length) throw new Error(`diagram.wrap: unknown key ${extra.join(", ")}; only aspect is read`);
+    if (aspect == null) return WRAP_ASPECT;
+    if (typeof aspect === "number" && Number.isFinite(aspect) && aspect > 0) return aspect;
+    throw new Error(`diagram.wrap.aspect: ${JSON.stringify(aspect)} is not a positive number`);
+  }
+  throw new Error(`diagram.wrap: ${JSON.stringify(value)} should be true, false or { aspect: <number> }`);
 }

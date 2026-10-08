@@ -91,6 +91,8 @@ export interface Sheet {
   title: string;
   cards: Card[];
   wires: Wire[];
+  /** The aspect ratio to aim for when wrapping into rows. Absent, the sheet stays one row. */
+  wrap?: number;
 }
 
 /**
@@ -155,7 +157,7 @@ export function buildSheet(h: Harness): Sheet {
     cards.push(connectorCard(c, pins, inUse, repeated));
   }
   for (const c of h.cables) if (!isRun(c)) cards.push(cableCard(c, used.get(c.id) ?? new Map(), repeated));
-  return { title: h.title, cards, wires };
+  return { title: h.title, cards, wires, ...(h.wrap ? { wrap: h.wrap } : {}) };
 }
 
 function tag(c: Cable): Tag | undefined {

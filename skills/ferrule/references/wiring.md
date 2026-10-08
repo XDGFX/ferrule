@@ -85,6 +85,12 @@ Rules, each enforced:
 - `X.` makes a fresh instance each time it appears. A template with several fresh instances
   numbers them on the sheet: `TEMPLATE · 1`, `TEMPLATE · 2`.
 
+## Layout
+
+`diagram: { wrap: true }` or `diagram: { wrap: { aspect: 4 } }` folds a wide sheet into rows,
+as for plumbing. It's read from a loom too, but folds usually cut through a multi-core cable,
+so leave it off unless the render reads better.
+
 ## Not read
 
 `metadata`, `options`, `tweak`, `additional_bom_items`, images, `pins` dicts, shields (wire

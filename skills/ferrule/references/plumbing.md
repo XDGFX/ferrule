@@ -103,6 +103,13 @@ Rules, each enforced:
 - A chain turns round once at most, and only a pipe carries `^`.
 - Every name must be declared in `components` or `pipes`.
 
+## Layout
+
+A long chain renders as one wide row. `diagram: { wrap: true }` folds it into rows aiming for a
+1.6:1 sheet; `diagram: { wrap: { aspect: 4 } }` names the ratio, and a higher one folds less. It
+can sit in the plan or in a prepended file. Raise `aspect` if a fold leaves one part alone on the
+last row. Any other `wrap` value is an error.
+
 ## Not read
 
 Legacy `edges`, pipeviz's `--combined` sheet, and the Graphviz keys (`shape`, `style`,
