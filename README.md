@@ -74,6 +74,12 @@ cable, so a wrapped loom sends a ribbon of cores round the sheet and reads worse
 The aspect is a target, not a promise. A plan whose only narrow point is its last pipe leaves one
 part alone on the last row; raise `aspect` until it doesn't.
 
+**Agent skill:** `skills/ferrule` teaches a coding agent to write both dialects within the
+subset ferrule reads, and to render and commit the result. Install it with
+`npx skills add xdgfx/ferrule@ferrule`, or symlink the folder into `~/.claude/skills/`. When
+what a reader accepts changes, update its reference in `skills/ferrule/references/` in the same
+change.
+
 **Parity check:** `npm run parity -- --dir <project> --python <python with WireViz>` reads every
 loom with ferrule and with WireViz and fails if they disagree on any connector, connection, mate
 or loop.
