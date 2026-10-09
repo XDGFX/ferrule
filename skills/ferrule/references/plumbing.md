@@ -10,7 +10,11 @@ uses it. The sheet is titled by `diagram.title`, or else the file name in title 
 ```yaml
 templates:
   fitting:
-    color: "#64748b"              # the card's colour chip; nothing else in a template is drawn
+    color: "#64748b"              # the card's outline and faint tint
+    display: pill                 # card (default), pill or exit
+  pump:
+    color: "#c2410c"
+    glyph: pump                   # a symbol before the title; none by default
 
 components:
   tank:
@@ -41,18 +45,30 @@ components:
 - With both `ports` and `portcount`, the two must agree.
 - `ref` and `template` chains may nest. A cycle is an error.
 - A component no chain names is not drawn.
+- `display` and `glyph` are opt-in, usually set on a template; a component may override them.
+  Any other value is an error.
+
+| `display` | Drawn as |
+|---|---|
+| `card` | The full card: title, subtitle, ports and description. The default. |
+| `pill` | A minor part, such as an adapter or tee: a borderless muted line, no subtitle or description. A simple pill is one line; one with ports keeps them as tight rows. |
+| `exit` | Where a run leaves the sheet, such as `FROM OTHER SYSTEM`: a tag with an arrow on its east end, every port on its centre line. |
+
+`glyph` is one of `valve`, `pump`, `filter`, `heater`, `tank`, `trap`, `vent` or `fixture`: a
+small P&ID-style symbol in the template colour before a full card's title. Pills and exits draw
+none. Leave it off a template with no clear symbol.
 
 ## Pipes
 
 ```yaml
 pipes:
   hose_25mm:
-    label: 25MM FILL HOSE         # the run's tag
+    label: 25MM FILL HOSE         # the run's label, drawn over the line in its colour
     size: 25mm                    # bore: 25mm, 3/4", 1-1/2" or 1.5in; sets line weight
     service_rating: potable       # potable blue, hot red, waste brown, vent olive
     colour: OG                    # or color; a colour code or hex, which beats the service
     material: PVC
-    length: 1.2 m                 # joins the tag
+    length: 1.2 m                 # joins the label
 ```
 
 Any other `service_rating` draws grey; give the pipe a `colour` instead.
@@ -72,7 +88,7 @@ Each entry is a **chain** of tokens, read hop by hop.
 
 ```yaml
 connections:
-  - - filler:BARB_25MM            # part → pipe → part: one tagged run
+  - - filler:BARB_25MM            # part → pipe → part: one labelled run
     - hose_25mm
     - tee_25mm_barb:A
   - - tee_25mm_barb:B
@@ -86,11 +102,11 @@ connections:
     - tank.b:LOW_BSP40_M
 ```
 
-- **`pipe^`** leaves both its ends heading east and turns round past them, with its tag at the
+- **`pipe^`** leaves both its ends heading east and turns round past them, with its label at the
   turn. Everything after it in the chain is laid out heading back, so `tank.b` sits beside
   `tank.a` instead of a sheet-width away. Use it when a run joins two parts that sit side by
   side, such as a crosslink or a loop out and back.
-- Two parts side by side, with no pipe between them, are joined directly by a short untagged
+- Two parts side by side, with no pipe between them, are joined directly by a short unlabelled
   line.
 
 Rules, each enforced:

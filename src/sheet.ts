@@ -2,7 +2,7 @@
 // them. Both layout engines start from this, so any difference in their output is layout alone.
 
 import { textWidth } from "./measure.ts";
-import type { Cable, Connector, Harness } from "./model.ts";
+import type { Cable, Connector, Display, Glyph, Harness } from "./model.ts";
 
 /** The Instrument style's fixed dimensions, in px. */
 export const STYLE = {
@@ -25,6 +25,26 @@ export const STYLE = {
   foldFrom: 3,
   /** Room a pin's colour swatch takes before its label, on a card where any pin has one. */
   swatchW: 14,
+  /** Where a card's title starts: past the glyph, when the card has one. */
+  titleX: 14,
+  glyphTitleX: 34,
+  /** A pill: one compact, borderless line for a minor part such as a fitting. */
+  pillH: 22,
+  pillSize: 10.5,
+  pillLh: 13,
+  /** A compact card for a minor part with ports, such as a tee. */
+  compactHeadH: 28,
+  compactRowH: 20,
+  compactRowSize: 10.5,
+  compactMinW: 120,
+  compactNumW: 24,
+  /** An exit tag: an arrow-ended label where a run leaves the sheet. */
+  exitH: 26,
+  exitSize: 11,
+  exitTip: 11,
+  /** A run's label, as plain text above the run: its size, and its gap from the line. */
+  labelSize: 10,
+  labelGap: 4,
 };
 
 export interface Row {
@@ -66,6 +86,10 @@ export interface Card {
   loops: [string, string][];
   notes: string[];
   ports: Port[];
+  /** A full card, a compact pill for a minor part, or an arrow-ended exit tag. */
+  display: Display;
+  /** A symbol before the title, on a full card only. */
+  glyph?: Glyph;
 }
 
 export interface Tag {
@@ -132,7 +156,7 @@ export function buildSheet(h: Harness): Sheet {
         to: touch(l.to.connector, l.to.pin, l.returns ? "E" : "W"),
         ...(l.returns && { returns: true }),
         ...base,
-        tag: tag(c),
+        tag: tag(c, base.weight),
       });
       continue;
     }
@@ -160,13 +184,18 @@ export function buildSheet(h: Harness): Sheet {
   return { title: h.title, cards, wires, ...(h.wrap ? { wrap: h.wrap } : {}) };
 }
 
-function tag(c: Cable): Tag | undefined {
+/**
+ * A run's label. It's drawn as plain text just above the line, so the layout reserves its height
+ * on both sides: the line stays centred in the space and the text clears whatever is above.
+ */
+function tag(c: Cable, weight: number): Tag | undefined {
   const text = [c.label ?? "", cableSpec(c)].filter(Boolean).join(" · ");
   if (!text) return undefined;
-  return { text, w: tagWidth(text), h: STYLE.tagH };
+  const above = weight / 2 + STYLE.labelGap + STYLE.labelSize;
+  return { text, w: Math.ceil(textWidth(text, STYLE.labelSize, 500) + 8), h: Math.ceil(2 * above) };
 }
 
-/** Width of a pill-shaped tag holding `text`. */
+/** Width of a pill-shaped tag holding `text`, as a cable card labels each core. */
 export function tagWidth(text: string): number {
   return Math.ceil(textWidth(text, STYLE.tagSize, 500) + 16);
 }
@@ -194,10 +223,15 @@ export function displayName(id: string, template: string, repeated: Set<string>)
 function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>, repeated: Set<string>): Card {
   const sub = [c.type, c.subtype].filter(Boolean).join(" · ");
   const title = c.label || displayName(c.id, c.template, repeated);
+  const display = c.display ?? "card";
+  if (display === "exit") return exitCard(c, title, used);
+  if (display === "pill" && c.simple) return pillCard(c, title, used);
   if (c.simple) {
-    const w = width([textWidth(title, STYLE.titleSize, 600) + 40, textWidth(sub, STYLE.subSize) + 24]);
+    const room = titleX(c.glyph) + STYLE.pad;
+    const w = width([textWidth(title, STYLE.titleSize, 600) + room, textWidth(sub, STYLE.subSize) + 24]);
     const card = base(c.id, "simple", title, sub, c.accent, w, [], []);
-    card.titleLines = wrapTitle(title, w - 40);
+    if (c.glyph) card.glyph = c.glyph;
+    card.titleLines = wrapTitle(title, w - room);
     card.subLines = wrap([sub], w - 24, STYLE.subSize);
     card.h = STYLE.simpleH + extraHead(card);
     card.ports = ports(used, card, () => card.h / 2);
@@ -222,9 +256,57 @@ function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<st
     } else run.push(row);
   }
   flush();
+  if (display === "pill") return compactCard(base(c.id, "connector", title, "", c.accent, 0, rows, []), used);
   const card = base(c.id, "connector", title, sub, c.accent, 0, rows, c.notes);
   card.loops = c.loops;
+  if (c.glyph) card.glyph = c.glyph;
   return finish(card, used);
+}
+
+/** Where a full card's title starts, given its glyph. */
+export function titleX(glyph?: Glyph): number {
+  return glyph ? STYLE.glyphTitleX : STYLE.titleX;
+}
+
+/** A minor simple part as a single borderless line, wrapping only when wider than a card. */
+function pillCard(c: Connector, title: string, used: Map<string, Set<Side>>): Card {
+  const s = STYLE;
+  const w = Math.min(s.maxW, Math.ceil(textWidth(title, s.pillSize, 500) + 2 * s.pad));
+  const card = base(c.id, "simple", title, "", c.accent, w, [], []);
+  card.display = "pill";
+  card.titleLines = wrap([title], w - 2 * s.pad, s.pillSize, 500);
+  card.h = s.pillH + (card.titleLines.length - 1) * s.pillLh;
+  card.ports = ports(used, card, () => card.h / 2);
+  return card;
+}
+
+/** A minor part with ports: a short title line and tight rows, no subtitle or notes. */
+function compactCard(card: Card, used: Map<string, Set<Side>>): Card {
+  const s = STYLE;
+  card.display = "pill";
+  const numW = s.compactNumW;
+  card.w = Math.min(s.maxW, Math.ceil(Math.max(
+    s.compactMinW,
+    textWidth(card.title, s.pillSize, 500) + 2 * s.pad,
+    ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.compactRowSize - 1, 400, true) + 2 * s.pad : numW + 8 + textWidth(r.label, s.compactRowSize) + 24 + (r.detail ? textWidth(r.detail, s.compactRowSize - 1) + 12 : 0))),
+  ) / 2) * 2);
+  card.titleLines = wrap([card.title], card.w - 2 * s.pad, s.pillSize, 500);
+  card.rowTop = s.compactHeadH + (card.titleLines.length - 1) * s.pillLh;
+  card.rowH = s.compactRowH;
+  card.h = card.rowTop + card.rows.length * card.rowH + 2;
+  card.ports = ports(used, card, (key) => card.rowTop + card.rows.findIndex((r) => r.key === key) * card.rowH + card.rowH / 2);
+  return card;
+}
+
+/** Where a run leaves the sheet: an arrow-ended tag, every port on its centre line. */
+function exitCard(c: Connector, title: string, used: Map<string, Set<Side>>): Card {
+  const s = STYLE;
+  const w = Math.ceil(textWidth(title, s.exitSize, 600) + 2 * s.pad + s.exitTip);
+  const card = base(c.id, "simple", title, "", c.accent, w, [], []);
+  card.display = "exit";
+  card.h = s.exitH;
+  card.ports = ports(used, card, () => card.h / 2);
+  return card;
 }
 
 function cableCard(c: Cable, used: Map<string, Set<Side>>, repeated: Set<string>): Card {
@@ -235,7 +317,7 @@ function cableCard(c: Cable, used: Map<string, Set<Side>>, repeated: Set<string>
 }
 
 function base(id: string, kind: Card["kind"], title: string, sub: string, accent: string, w: number, rows: Row[], notes: string[]): Card {
-  return { id, kind, title, titleLines: [title], subLines: sub ? [sub] : [], accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [] };
+  return { id, kind, title, titleLines: [title], subLines: sub ? [sub] : [], accent, w, h: 0, rowTop: STYLE.headH, rowH: STYLE.rowH, rows, loops: [], notes, ports: [], display: "card" };
 }
 
 /** How much a wrapped title and subtitle deepen the header: one line of each fits as standard. */
@@ -249,12 +331,12 @@ function finish(card: Card, used: Map<string, Set<Side>>): Card {
   const notes = paragraphs(card.notes);
   // Notes may widen a card up to its limit, so they wrap less and the card stays shorter.
   card.w = width([
-    textWidth(card.title, s.titleSize, 600) + 28 + s.pad,
+    textWidth(card.title, s.titleSize, 600) + titleX(card.glyph) + s.pad,
     ...card.subLines.map((l) => textWidth(l, s.subSize) + 2 * s.pad),
     ...card.rows.map((r) => (r.fold ? textWidth(r.fold, s.rowSize - 1, 400, true) + 2 * s.pad : s.numW + 8 + swatch + textWidth(r.label, s.rowSize) + 34 + (r.detail ? textWidth(r.detail, s.rowSize - 1) + 16 : 0))),
     ...notes.map((n) => textWidth(n, s.noteSize) + 2 * s.pad),
   ]);
-  card.titleLines = wrapTitle(card.title, card.w - 28 - s.pad);
+  card.titleLines = wrapTitle(card.title, card.w - titleX(card.glyph) - s.pad);
   card.subLines = wrap(card.subLines, card.w - 2 * s.pad, s.subSize);
   card.notes = wrap(notes, card.w - 2 * s.pad, s.noteSize);
   card.rowTop = s.headH + extraHead(card);

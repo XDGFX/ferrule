@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { layoutElk } from "../src/layout/elk.ts";
-import { flatten, nearest, render } from "../src/render.ts";
+import { clamp, flatten, nearest, render } from "../src/render.ts";
 import { buildSheet } from "../src/sheet.ts";
 import { readPipeviz } from "../src/pipeviz.ts";
 import { readWireviz } from "../src/wireviz.ts";
@@ -96,4 +96,77 @@ test("a reversed pipe turns round east of both its ends, with its tag at the tur
   const out = await render(sheet, place);
   assert.match(out, /stroke:#f97316/);
   assert.match(out, />40MM HOSE</);
+});
+
+const plumbing = `
+templates:
+  pump:
+    color: "#c2410c"
+    glyph: pump
+  fitting:
+    display: pill
+components:
+  pump:
+    template: pump
+    label: PUMP
+    ports: [IN, OUT]
+  adapter:
+    template: fitting
+    label: ADAPTER
+    simple: true
+  out:
+    label: TO OTHER SYSTEM
+    display: exit
+    ports: [IN]
+pipes:
+  hot:
+    label: HOT PIPE
+    size: 16mm
+    service_rating: hot
+  plain:
+    label: PLAIN PIPE
+    size: 16mm
+connections:
+  - [pump:OUT, hot, adapter., plain, out]
+`;
+
+const plumbed = async () => {
+  const sheet = buildSheet(readPipeviz([plumbing], "plan"));
+  return render(sheet, await layoutElk(sheet));
+};
+
+test("a run's label is plain text in its run's colour, haloed, with no box behind it", async () => {
+  const s = await plumbed();
+  assert.match(s, /<text class="label" style="fill:var\(--acc-e23b3b\)"[^>]*>HOT PIPE</);
+  // A grey run has no colour of its own to lend, so its label is muted.
+  assert.match(s, /<text class="label muted"[^>]*>PLAIN PIPE</);
+  assert.doesNotMatch(s, /class="tag"/);
+  assert.match(s, /\.label\{paint-order:stroke;stroke:var\(--bg\)/);
+});
+
+test("a cable card still labels each core with a boxed tag, as part of its pin table", async () => {
+  assert.match(await svg(), /<rect class="tag"/);
+});
+
+test("a card is outlined and tinted in its colour, and draws its glyph; pills and exits are their own shapes", async () => {
+  const s = await plumbed();
+  assert.match(s, /fill:var\(--acc-c2410c\);fill-opacity:var\(--tint\);stroke:var\(--acc-c2410c\)/);
+  assert.match(s, /<g class="glyph"[^>]*style="stroke:var\(--acc-c2410c\)"><circle/);
+  assert.match(s, /<rect class="pill"[^>]*\/>\n<text class="pill-text"[^>]*>ADAPTER</);
+  assert.match(s, /<path class="exit"/);
+  assert.doesNotMatch(s, /class="chip"/);
+});
+
+test("each theme clamps a colour's lightness so it reads on that ground", async () => {
+  // Pale yellow darkens on the light ground; deep green lightens on the dark.
+  assert.equal(clamp("#f0c419", 0, 0.4, 1), "#c09b0c");
+  assert.equal(clamp("#166534", 0.63, 1, 0.55), "#6dd594");
+  // A colour already within range is left alone.
+  assert.equal(clamp("#0369a1", 0, 0.4, 1), "#0369a1");
+  for (const theme of ["light", "dark"] as const) {
+    const flat = flatten(await plumbed(), theme);
+    assert.doesNotMatch(flat, /var\(--/);
+  }
+  assert.match(flatten(await plumbed(), "dark"), new RegExp(`fill:${clamp("#c2410c", 0.63, 1, 0.55)};fill-opacity:0.06`));
+  assert.match(flatten(await plumbed(), "light"), new RegExp(`fill:${clamp("#c2410c", 0, 0.4, 1)};fill-opacity:0.05`));
 });

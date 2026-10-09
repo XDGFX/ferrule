@@ -10,7 +10,7 @@
 
 import { parse } from "yaml";
 import { hex, stripes } from "./colours.ts";
-import { readWrap, type Cable, type Connector, type End, type Harness, type Link } from "./model.ts";
+import { DISPLAYS, GLYPHS, readWrap, type Cable, type Connector, type Display, type End, type Glyph, type Harness, type Link } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
@@ -189,6 +189,8 @@ function component(id: string, template: string, label: string, def: Yaml): Conn
     loops: [],
     accent: hex(colourOf(def)),
     notes: lines(def.description),
+    ...(def.display != null && { display: def.display as Display }),
+    ...(def.glyph != null && { glyph: def.glyph as Glyph }),
   };
 }
 
@@ -203,6 +205,12 @@ function check(key: string, def: Yaml): Yaml {
   const has = "ports" in def || "portcount" in def;
   if (def.simple && has) throw new Error(`component ${key} is simple, so it can't have ports or portcount`);
   if (!def.simple && !has) throw new Error(`component ${key} needs ports or portcount`);
+  if (def.display != null && !(DISPLAYS as readonly unknown[]).includes(def.display)) {
+    throw new Error(`component ${key}: display ${JSON.stringify(def.display)} should be one of ${DISPLAYS.join(", ")}`);
+  }
+  if (def.glyph != null && !(GLYPHS as readonly unknown[]).includes(def.glyph)) {
+    throw new Error(`component ${key}: glyph ${JSON.stringify(def.glyph)} should be one of ${GLYPHS.join(", ")}`);
+  }
   if (Array.isArray(def.ports) && "portcount" in def && Number(def.portcount) !== def.ports.length) {
     throw new Error(`component ${key}: portcount ${def.portcount} doesn't match its ${def.ports.length} ports`);
   }

@@ -1,11 +1,13 @@
-// Draws a laid-out sheet in the Instrument style: Inter, quiet cards with a colour chip, filleted
-// wires with a hairline casing, and a dashed tracer on two-colour wires. Colours are CSS
-// variables, switched by prefers-color-scheme; `flatten` resolves them for PNG rasterisers.
+// Draws a laid-out sheet in the Instrument style: Inter, quiet cards outlined and faintly tinted
+// in their own colour, filleted wires with a hairline casing, a dashed tracer on two-colour
+// wires, and run labels as plain text over the line. Colours are CSS variables, switched by
+// prefers-color-scheme; `flatten` resolves them for PNG rasterisers.
 
 import { WIRE } from "./colours.ts";
 import type { Placement, Pt, Route } from "./layout/types.ts";
 import { FACES, fontFaces, type Face } from "./measure.ts";
-import { STYLE as S, tagWidth, type Card, type Sheet, type Wire } from "./sheet.ts";
+import type { Glyph } from "./model.ts";
+import { STYLE as S, tagWidth, titleX, type Card, type Sheet, type Wire } from "./sheet.ts";
 
 // A white core on a white card needs a darker casing than the rest to stay visible; a black one
 // on the dark ground needs a lighter one.
@@ -15,12 +17,15 @@ export const THEMES = {
     casing: "#7f8792", "case-bk": "#7f8792", "case-wh": "#5e6670", "tag-bg": "#ffffff",
     // A pure white core on the light ground reads as a hollow outline; a pale grey reads as filled.
     "core-bk": WIRE.BK, "core-wh": "#dde0e5",
+    // A card's tint and outline in its own colour: faint enough to keep its text at full contrast.
+    pill: "#e2e5ea", "pill-text": "#5e6670", tint: "0.05", "edge-op": "0.55",
   },
   dark: {
     bg: "#121418", card: "#1c1f25", line: "#323741", text: "#e8eaed", muted: "#9aa1ab", faint: "#626a75",
     casing: "#5d6570", "case-bk": "#9aa1ab", "case-wh": "#5d6570", "tag-bg": "#23272e",
     // On the dark ground a true black core vanishes and leaves its casing looking hollow.
     "core-bk": "#474d57", "core-wh": WIRE.WH,
+    pill: "#1f2228", "pill-text": "#959ca6", tint: "0.06", "edge-op": "0.6",
   },
 } as const;
 
@@ -32,9 +37,9 @@ const CASING = 1.2;
 
 const vars = (t: Record<string, string>) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(";");
 
-const CSS = `
-svg{${vars(THEMES.light)}}
-@media (prefers-color-scheme: dark){svg{${vars(THEMES.dark)}}}
+const css = (light: string, dark: string) => `
+svg{${vars(THEMES.light)}${light}}
+@media (prefers-color-scheme: dark){svg{${vars(THEMES.dark)}${dark}}}
 text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .bg{fill:var(--bg)}
 .card{fill:var(--card);stroke:var(--line);stroke-width:1}
@@ -47,9 +52,65 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .core{fill:none;stroke-linejoin:round}
 .tag{fill:var(--tag-bg);stroke:var(--line);stroke-width:1}
 .port{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
-.chip{stroke:var(--faint);stroke-width:1}
 .mate{fill:none;stroke:var(--muted);stroke-linecap:round;stroke-linejoin:round}
-.cap{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round}`;
+.cap{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round}
+.pill{fill:var(--pill)}
+.pill-text{fill:var(--pill-text)}
+.exit{fill:var(--card);stroke:var(--muted);stroke-width:1;stroke-opacity:.7;stroke-linejoin:round}
+.label{paint-order:stroke;stroke:var(--bg);stroke-width:3.5;stroke-linejoin:round}
+.glyph{fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}`;
+
+/**
+ * The colours a sheet draws accents in, each as a theme variable. A colour is given as it looks in
+ * life, which may be too pale for the light ground or too dark for the dark one, so each theme
+ * clamps its lightness: no lighter than 40% on light, no darker than 63% and no more than 55%
+ * saturated on dark.
+ */
+interface Palette {
+  /** The variable for `hex`, recording it so the sheet defines it. */
+  of(hex: string): string;
+  /** The variable definitions for each theme, to append to its block. */
+  vars(theme: "light" | "dark"): string;
+}
+
+function palette(): Palette {
+  const used = new Map<string, string>();
+  return {
+    of(hex) {
+      const k = `acc-${hex.replace("#", "").toLowerCase()}`;
+      used.set(k, hex);
+      return `var(--${k})`;
+    },
+    vars(theme) {
+      const adjust = theme === "light" ? (h: string) => clamp(h, 0, 0.4, 1) : (h: string) => clamp(h, 0.63, 1, 0.55);
+      return [...used].map(([k, v]) => `;--${k}:${adjust(v)}`).join("");
+    },
+  };
+}
+
+/** `hex` with its HSL lightness clamped to [lo, hi] and its saturation capped. */
+export function clamp(hex: string, lo: number, hi: number, cap: number): string {
+  const v = parseInt(hex.slice(1), 16);
+  let [r, g, b] = [(v >> 16) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255];
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, sat = 0;
+  let l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h /= 6;
+  }
+  l = Math.min(Math.max(l, lo), hi);
+  sat = Math.min(sat, cap);
+  const q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat, p = 2 * l - q;
+  const f = (t: number) => {
+    t = (t + 1) % 1;
+    return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p;
+  };
+  [r, g, b] = [f(h + 1 / 3), f(h), f(h - 1 / 3)];
+  return "#" + [r, g, b].map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("");
+}
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const n = (v: number) => String(Math.round(v * 10) / 10);
@@ -69,6 +130,7 @@ function text(g: Glyphs, attrs: string, body: string, weight = 400, italic = fal
 
 export async function render(sheet: Sheet, place: Placement, caption = ""): Promise<string> {
   const g: Glyphs = new Map();
+  const acc = palette();
   const W = Math.ceil(place.width);
   const H = Math.ceil(place.height) + TITLE_BAND;
   const cards = new Map(sheet.cards.map((c) => [c.id, c]));
@@ -83,7 +145,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
     text(g, 'x="24" y="36" font-size="20"', sheet.title, 600),
   ];
   if (caption) o.push(text(g, 'class="muted" x="24" y="56" font-size="11.5"', caption));
-  for (const c of sheet.cards) o.push(...drawCard(g, c, at(c.id)));
+  for (const c of sheet.cards) o.push(...drawCard(g, acc, c, at(c.id)));
 
   const tags: string[] = [];
   const ports: string[] = [];
@@ -95,7 +157,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
       continue;
     }
     o.push(...drawWire(path(r.kind, pts), w));
-    if (w.tag && r.tag) tags.push(...drawTag(g, nearest(pts, shift(r.tag)), w.tag.text, w.tag.w));
+    if (w.tag && r.tag) tags.push(drawLabel(g, acc, pts, shift(r.tag), w));
     for (const [end, p] of [[w.from, pts[0]], [w.to, pts[pts.length - 1]]] as const) {
       if (cards.get(end.card)!.kind !== "cable") ports.push(`<circle class="port" cx="${n(p.x)}" cy="${n(p.y)}" r="3.2"/>`);
     }
@@ -123,38 +185,53 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
 
   const head = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(sheet.title)}">`,
-    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${CSS}</style>`,
+    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${css(acc.vars("light"), acc.vars("dark"))}</style>`,
   ];
   return [...head, ...o].join("\n");
 }
 
-function drawCard(g: Glyphs, c: Card, p: Pt): string[] {
+function drawCard(g: Glyphs, acc: Palette, c: Card, p: Pt): string[] {
+  if (c.display === "exit") return drawExit(g, c, p);
+  if (c.display === "pill" && c.kind === "simple") return drawPill(g, c, p);
+  const compact = c.display === "pill";
   const o: string[] = [];
-  const dash = c.kind === "cable" ? ' stroke-dasharray="5 3"' : "";
-  o.push(`<rect class="card" x="${n(p.x)}" y="${n(p.y)}" width="${c.w}" height="${c.h}" rx="${RADIUS}"${dash}/>`);
-  o.push(`<rect class="chip" x="${n(p.x + 12)}" y="${n(p.y + 12)}" width="10" height="10" rx="2.5" style="fill:${c.accent}"/>`);
-  c.titleLines.forEach((line, j) => {
-    o.push(text(g, `x="${n(p.x + 28)}" y="${n(p.y + 21 + j * S.titleLh)}" font-size="${S.titleSize}"`, line, 600));
-  });
+  const box = `x="${n(p.x)}" y="${n(p.y)}" width="${c.w}" height="${c.h}" rx="${compact ? 7 : RADIUS}"`;
+  if (compact) {
+    o.push(`<rect class="pill" ${box}/>`);
+    c.titleLines.forEach((line, j) => {
+      o.push(text(g, `class="pill-text" x="${n(p.x + S.pad)}" y="${n(p.y + 18 + j * S.pillLh)}" font-size="${S.pillSize}"`, line, 500));
+    });
+  } else {
+    const a = acc.of(c.accent);
+    const dash = c.kind === "cable" ? ' stroke-dasharray="5 3"' : "";
+    o.push(`<rect class="card" ${box} style="stroke:none"/>`);
+    o.push(`<rect ${box} style="fill:${a};fill-opacity:var(--tint);stroke:${a};stroke-opacity:var(--edge-op);stroke-width:1"${dash}/>`);
+    if (c.glyph) o.push(drawGlyph(c.glyph, p.x + 19, p.y + 16.5, a));
+    c.titleLines.forEach((line, j) => {
+      o.push(text(g, `x="${n(p.x + titleX(c.glyph))}" y="${n(p.y + 21 + j * S.titleLh)}" font-size="${S.titleSize}"`, line, 600));
+    });
+  }
   const subTop = p.y + 39 + (c.titleLines.length - 1) * S.titleLh;
   c.subLines.forEach((line, j) => {
     o.push(text(g, `class="muted" x="${n(p.x + 12)}" y="${n(subTop + j * S.subLh)}" font-size="${S.subSize}"`, line));
   });
   const swatch = c.rows.some((r) => r.colours) ? S.swatchW : 0;
   // A cable card's rows are drawn later, over the cores that pass through it.
+  const rowSize = compact ? S.compactRowSize : S.rowSize;
+  const numW = compact ? S.compactNumW : S.numW;
   if (c.kind !== "cable") c.rows.forEach((r, i) => {
     const ry = p.y + c.rowTop + i * c.rowH;
-    const base = ry + c.rowH / 2 + S.rowSize * 0.36;
+    const base = ry + c.rowH / 2 + rowSize * 0.36;
     if (i) o.push(`<line class="rule" x1="${n(p.x + 10)}" y1="${n(ry)}" x2="${n(p.x + c.w - 10)}" y2="${n(ry)}"/>`);
     if (r.fold) {
-      o.push(text(g, `class="faint" x="${n(p.x + c.w / 2)}" y="${n(base)}" text-anchor="middle" font-size="${S.rowSize - 1}"`, r.fold, 400, true));
+      o.push(text(g, `class="faint" x="${n(p.x + c.w / 2)}" y="${n(base)}" text-anchor="middle" font-size="${rowSize - 1}"`, r.fold, 400, true));
       return;
     }
     const used = c.ports.some((q) => q.id.startsWith(`${r.key}:`)) || c.loops.some((l) => l.includes(r.key));
-    o.push(text(g, `class="${used ? "muted" : "faint"}" x="${n(p.x + S.numW - 8)}" y="${n(base)}" text-anchor="end" font-size="${S.rowSize - 1}"`, r.num));
-    if (r.colours) o.push(...drawSwatch(p.x + S.numW + 8, ry + c.rowH / 2, r.colours));
-    o.push(text(g, `${used ? "" : 'class="faint" '}x="${n(p.x + S.numW + 8 + swatch)}" y="${n(base)}" font-size="${S.rowSize}"`, r.label));
-    if (r.detail) o.push(text(g, `class="faint" x="${n(p.x + c.w - 12)}" y="${n(base)}" text-anchor="end" font-size="${S.rowSize - 1}"`, r.detail));
+    o.push(text(g, `class="${used ? "muted" : "faint"}" x="${n(p.x + numW - 8)}" y="${n(base)}" text-anchor="end" font-size="${rowSize - 1}"`, r.num));
+    if (r.colours) o.push(...drawSwatch(p.x + numW + 8, ry + c.rowH / 2, r.colours));
+    o.push(text(g, `${used ? "" : 'class="faint" '}x="${n(p.x + numW + 8 + swatch)}" y="${n(base)}" font-size="${rowSize}"`, r.label));
+    if (r.detail) o.push(text(g, `class="faint" x="${n(p.x + c.w - 12)}" y="${n(base)}" text-anchor="end" font-size="${rowSize - 1}"`, r.detail));
   });
   if (c.notes.length) {
     const ny = p.y + c.rowTop + c.rows.length * c.rowH;
@@ -164,6 +241,42 @@ function drawCard(g: Glyphs, c: Card, p: Pt): string[] {
     });
   }
   return o;
+}
+
+/** A minor part: a borderless rounded pill in muted text. */
+function drawPill(g: Glyphs, c: Card, p: Pt): string[] {
+  const o = [`<rect class="pill" x="${n(p.x)}" y="${n(p.y)}" width="${c.w}" height="${c.h}" rx="5"/>`];
+  const top = p.y + c.h / 2 - ((c.titleLines.length - 1) * S.pillLh) / 2 + S.pillSize * 0.36;
+  c.titleLines.forEach((line, j) => {
+    o.push(text(g, `class="pill-text" x="${n(p.x + c.w / 2)}" y="${n(top + j * S.pillLh)}" text-anchor="middle" font-size="${S.pillSize}"`, line, 500));
+  });
+  return o;
+}
+
+/** Where a run leaves the sheet: a tag whose east end is an arrow. */
+function drawExit(g: Glyphs, c: Card, p: Pt): string[] {
+  const { x, y } = p;
+  const r = 6, t = S.exitTip, w = c.w, h = c.h;
+  const d = `M${n(x + r)},${n(y)} H${n(x + w - t)} L${n(x + w)},${n(y + h / 2)} L${n(x + w - t)},${n(y + h)} H${n(x + r)} Q${n(x)},${n(y + h)} ${n(x)},${n(y + h - r)} V${n(y + r)} Q${n(x)},${n(y)} ${n(x + r)},${n(y)} Z`;
+  return [
+    `<path class="exit" d="${d}"/>`,
+    text(g, `class="muted" x="${n(x + S.pad)}" y="${n(y + h / 2 + S.exitSize * 0.36)}" font-size="${S.exitSize}"`, c.title, 600),
+  ];
+}
+
+/** A monoline P&ID-style symbol, 14 px across, centred on (cx, cy). */
+function drawGlyph(name: Glyph, cx: number, cy: number, colour: string): string {
+  const shapes: Record<Glyph, string> = {
+    valve: `<path d="M-7,-4.5 L7,4.5 V-4.5 L-7,4.5 Z"/>`,
+    pump: `<circle r="6.5"/><path d="M-3.2,-5.6 L6.5,0 L-3.2,5.6"/>`,
+    filter: `<path d="M0,-7 L7,0 L0,7 L-7,0 Z"/><path d="M0,-7 V7" stroke-dasharray="1.6 1.6"/>`,
+    heater: `<path d="M-7,0 H-5.2 L-3.4,-4.5 L-0.9,4.5 L1.6,-4.5 L4.1,4.5 L5.4,0 H7"/>`,
+    tank: `<rect x="-5.5" y="-7" width="11" height="14" rx="2.5"/><path d="M-5.5,0.5 H5.5"/>`,
+    trap: `<path d="M-5,-6.5 V0.5 A5,5 0 0 0 5,0.5 V-6.5"/>`,
+    vent: `<path d="M0,7 V-6.5 M-4.5,-2 L0,-6.5 L4.5,-2"/>`,
+    fixture: `<path d="M-6.5,-1.5 A6.5,6 0 0 1 6.5,-1.5 Z"/><path d="M-3.5,2 L-4.5,6 M0,2 V6.5 M3.5,2 L4.5,6"/>`,
+  };
+  return `<g class="glyph" transform="translate(${n(cx)},${n(cy)})" style="stroke:${colour}">${shapes[name]}</g>`;
 }
 
 /** A pin's colour marking: a small chip, split down the middle for a two-colour mark. */
@@ -231,6 +344,30 @@ function drawWire(d: string, w: Wire): string[] {
   return o;
 }
 
+/**
+ * A pipe label as plain text: above a horizontal run, centred where the tag would sit, or beside a
+ * vertical one. A halo in the ground colour keeps it legible over any line it crosses.
+ */
+function drawLabel(g: Glyphs, acc: Palette, pts: Pt[], at: Pt, w: Wire): string {
+  const c = nearest(pts, at);
+  let dx = 1, dy = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    const within = Math.min(a.x, b.x) - 0.5 <= c.x && c.x <= Math.max(a.x, b.x) + 0.5 && Math.min(a.y, b.y) - 0.5 <= c.y && c.y <= Math.max(a.y, b.y) + 0.5;
+    if (within && (a.x !== b.x || a.y !== b.y)) [dx, dy] = [b.x - a.x, b.y - a.y];
+    if (within) break;
+  }
+  // The label takes its run's colour, so it reads as belonging to that line; a grey run's is muted.
+  const code = w.colours[0];
+  const colour = code?.startsWith("#") ? code : code && code !== "GY" ? WIRE[code] : undefined;
+  const paint = colour ? `class="label" style="fill:${acc.of(colour)}"` : 'class="label muted"';
+  const off = w.weight / 2 + S.labelGap;
+  const attrs = Math.abs(dx) >= Math.abs(dy)
+    ? `x="${n(c.x)}" y="${n(c.y - off - 1)}" text-anchor="middle"`
+    : `x="${n(c.x + off + 1)}" y="${n(c.y + S.labelSize * 0.36)}"`;
+  return text(g, `${paint} ${attrs} font-size="${S.labelSize}"`, w.tag!.text, 500);
+}
+
 function drawTag(g: Glyphs, c: Pt, label: string, w: number): string[] {
   return [
     `<rect class="tag" x="${n(c.x - w / 2)}" y="${n(c.y - S.tagH / 2)}" width="${n(w)}" height="${S.tagH}" rx="${S.tagH / 2}"/>`,
@@ -286,8 +423,11 @@ export function path(kind: Route["kind"], pts: Pt[]): string {
 
 /** Resolve the CSS variables for one theme. resvg cannot evaluate var(), so a PNG needs literal colours. */
 export function flatten(svg: string, theme: keyof typeof THEMES): string {
-  const t: Record<string, string> = THEMES[theme];
+  const block = (re: RegExp) => Object.fromEntries([...(re.exec(svg)?.[1] ?? "").matchAll(/--([a-z0-9-]+):([^;}]+)/g)].map((m) => [m[1], m[2]]));
+  const t: Record<string, string> = theme === "dark"
+    ? { ...block(/@media \(prefers-color-scheme: dark\)\{svg\{([^}]*)\}\}/), ...THEMES.dark }
+    : { ...block(/\nsvg\{([^}]*)\}/), ...THEMES.light };
   return svg
     .replace(/@media \(prefers-color-scheme: dark\)\{svg\{[^}]*\}\}/, "")
-    .replace(/var\(--([a-z-]+)\)/g, (_, k: string) => t[k]);
+    .replace(/var\(--([a-z0-9-]+)\)/g, (_, k: string) => t[k]);
 }

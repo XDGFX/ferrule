@@ -24,7 +24,22 @@ export interface Connector {
   loops: [string, string][];
   accent: string;
   notes: string[];
+  /** How the part is drawn. Absent, it's a full card. */
+  display?: Display;
+  /** A P&ID-style symbol before the card's title. Absent, the card has none. */
+  glyph?: Glyph;
 }
+
+/**
+ * A full card; a compact pill for a minor part such as an adapter or tee, which carries no
+ * subtitle or notes; or an arrow-ended tag where a run leaves the sheet.
+ */
+export const DISPLAYS = ["card", "pill", "exit"] as const;
+export type Display = (typeof DISPLAYS)[number];
+
+/** The symbols a part can carry, each a small monoline P&ID shape. */
+export const GLYPHS = ["valve", "pump", "filter", "heater", "tank", "trap", "vent", "fixture"] as const;
+export type Glyph = (typeof GLYPHS)[number];
 
 export interface CableWire {
   index: number;
