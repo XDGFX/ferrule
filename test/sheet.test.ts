@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildSheet, weight } from "../src/sheet.ts";
+import { buildSheet, STYLE, titleX, weight } from "../src/sheet.ts";
 import type { Harness } from "../src/model.ts";
 
 const pins = (n: number) => Array.from({ length: n }, (_, i) => ({ num: String(i + 1), label: `P${i + 1}`, colours: [] }));
@@ -211,4 +211,61 @@ test("a title too long for the widest card wraps and deepens the header", () => 
   assert.ok(s.cards[0].h > plain.cards[0].h);
   assert.ok(s.cards[1].rowTop > plain.cards[1].rowTop);
   assert.deepEqual(plain.cards[1].titleLines, ["A"]);
+});
+
+test("a run's label reserves room above and below its line, so the text over it clears its neighbours", () => {
+  const w = sheet.wires.find((x) => x.tag)!;
+  assert.ok(w.tag!.h >= 2 * (w.weight / 2 + 10));
+});
+
+const minor: Harness = {
+  title: "t",
+  connectors: [
+    { ...conn("PUMP", 2), glyph: "pump" },
+    { ...conn("PLAIN", 2) },
+    { ...conn("ADAPTER", 1, true), label: "A LONG ADAPTER LABEL", display: "pill", notes: ["Not drawn"] },
+    { ...conn("TEE", 3), display: "pill", notes: ["Not drawn"] },
+    { ...conn("OUT", 1), label: "TO OTHER SYSTEM", display: "exit" },
+  ],
+  cables: [],
+  links: [],
+  mates: [],
+};
+
+test("a pill is one short line, with no subtitle or notes", () => {
+  const s = buildSheet(minor);
+  const pill = s.cards.find((c) => c.id === "ADAPTER")!;
+  assert.equal(pill.display, "pill");
+  assert.ok(pill.h < STYLE.simpleH);
+  assert.deepEqual([pill.subLines, pill.notes], [[], []]);
+});
+
+test("a pill with ports keeps its rows, tighter, and drops its subtitle and notes", () => {
+  const tee = buildSheet({ ...minor, links: [{ cable: "X", wire: 1, from: { connector: "TEE", pin: "3" }, to: null }], cables: [
+    { id: "X", template: "X", type: "", gauge: null, length: "", accent: "#888888", notes: [], wires: [{ index: 1, label: "", code: "", colours: [] }] },
+  ] }).cards.find((c) => c.id === "TEE")!;
+  assert.equal(tee.rows.length, 3);
+  assert.equal(tee.rowH, STYLE.compactRowH);
+  assert.deepEqual([tee.subLines, tee.notes], [[], []]);
+  const port = tee.ports.find((p) => p.id === "3:E")!;
+  assert.equal(port.y, tee.rowTop + 2.5 * tee.rowH);
+});
+
+test("an exit is a single-height tag with every port on its centre line", () => {
+  const s = buildSheet({ ...minor, cables: [
+    { id: "X", template: "X", type: "", gauge: null, length: "", accent: "#888888", notes: [], wires: [{ index: 1, label: "", code: "", colours: [] }] },
+  ], links: [{ cable: "X", wire: 1, from: null, to: { connector: "OUT", pin: "1" } }] });
+  const out = s.cards.find((c) => c.id === "OUT")!;
+  assert.equal(out.display, "exit");
+  assert.equal(out.h, STYLE.exitH);
+  assert.deepEqual(out.ports.map((p) => p.y), [out.h / 2]);
+});
+
+test("a glyph moves the title along, and only a part that asks for one has it", () => {
+  const s = buildSheet(minor);
+  const pump = s.cards.find((c) => c.id === "PUMP")!, plain = s.cards.find((c) => c.id === "PLAIN")!;
+  assert.equal(pump.glyph, "pump");
+  assert.equal(plain.glyph, undefined);
+  assert.equal(titleX(pump.glyph) - titleX(plain.glyph), STYLE.glyphTitleX - STYLE.titleX);
+  assert.equal(plain.display, "card");
 });

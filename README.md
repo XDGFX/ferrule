@@ -99,7 +99,8 @@ or loop.
 ## What it looks like
 
 The style is called *Instrument*. Below is a heating loom, mocked up by hand before any layout
-engine existed.
+engine existed. It predates the outlined cards and plain-text run labels described below, so it
+still shows colour chips and boxed tags.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/heating_systems-a-dark.svg">
@@ -119,19 +120,21 @@ engine existed.
 
 | | Rule |
 |---|---|
-| **Cards** | One card per component. A colour chip identifies it, and the card lists its pins. Runs of unused pins fold into one row, such as `6–24 · 19 unused`. |
+| **Cards** | One card per component, outlined and faintly tinted in its colour, listing its pins. A colour too pale for the light theme or too dark for the dark one is clamped so it still reads. Runs of unused pins fold into one row, such as `6–24 · 19 unused`. |
+| **Minor parts** | A plumbing template can set `display: pill`, so its adapters and tees draw as borderless muted lines and don't weigh as much as pumps and tanks. |
+| **Glyphs** | A plumbing template can set `glyph` to `valve`, `pump`, `filter`, `heater`, `tank`, `trap`, `vent` or `fixture`, for a small P&ID symbol before the title. |
 | **Wires** | Orthogonal with filleted corners. Every core has a hairline casing. Black and white cores get their own casing colour in each theme, so they never disappear. |
 | **Two-colour wires** | The base colour, with a dashed tracer in the second colour that follows the wire round each bend. |
 | **Gauge** | Line weight follows conductor size, so a 50 mm² run looks like one. |
-| **Single-core runs** | A tag on the wire, such as `50 mm² · 1.5 m`, not a separate box. |
-| **Multi-core cables** | A dashed card that the cores pass straight through, each labelled on its wire. |
+| **Single-core runs** | Plain text over the wire in its colour, such as `50 mm² · 1.5 m`, haloed in the ground colour where it crosses a line. No box, so it can't be mistaken for a component. |
+| **Multi-core cables** | A dashed card that the cores pass straight through, each labelled with a boxed tag on its wire, as part of the card's table. |
 | **Junctions** | A single core that splits, or ends open, gets a dashed card like a multi-core. A core that goes nowhere ends in a short cap. |
 | **Mates and loops** | Two connectors plugged together are joined by a chain of dots between their title bars. Two pins bridged on one connector loop off its side. |
 | **Pin colours** | A small chip before the pin's label, split for a two-colour mark. |
-| **Pipes** | A run tagged with the pipe's name, coloured by service (potable blue, hot red, waste brown, vent olive) unless it has its own colour. Line weight follows bore, so a pipe reads heavier than any cable. Parts that screw straight together are joined by a short untagged line. |
+| **Pipes** | A run labelled with the pipe's name, coloured by service (potable blue, hot red, waste brown, vent olive) unless it has its own colour. Line weight follows bore, so a pipe reads heavier than any cable. Parts that screw straight together are joined by a short unlabelled line. |
 | **Ports** | A port's thread and gender sit muted at the end of its row, such as `1/2" BSP · F`. |
-| **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its tag at the turn, so the parts after it lie back beside the parts before it. |
-| **Off-sheet ends** | Planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
+| **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its label at the turn, so the parts after it lie back beside the parts before it. |
+| **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 
 ## How it fits together

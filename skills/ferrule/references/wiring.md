@@ -15,7 +15,7 @@ connectors:
     pincount: 6                   # instead of, or beyond, pinlabels
     pincolors: [RD, BU, "#d2b48c"] # a mark per pin, drawn as a chip before its label
     loops: [[4, 5]]               # pins bridged on the connector, by number
-    bgcolor: "#36b7ff"            # the card's colour chip; bgcolor_title wins if set
+    bgcolor: "#36b7ff"            # the card's outline and faint tint; bgcolor_title wins if set
     notes: |                      # under the pins; each line a paragraph
       Fused at the panel.
   ISOLATOR:
@@ -45,9 +45,9 @@ cables:
     notes: Tie every 300 mm.
 ```
 
-A single-core cable used once between two pins is drawn as a wire with a tag
-(`50 mm² · 1.5 m`). A multi-core cable, or a single core that splits or ends open, is a dashed
-card the cores pass through.
+A single-core cable used once between two pins is drawn as a wire labelled in plain text above
+the line, in the wire's colour (`50 mm² · 1.5 m`). A multi-core cable, or a single core that splits or ends open, is a dashed
+card the cores pass through, each core labelled with a boxed tag.
 
 ## Colours
 
