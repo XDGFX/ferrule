@@ -30,7 +30,7 @@ Coming from WireViz? The format will feel familiar, and ferrule keeps compatibil
 ## Use
 
 ```bash
-npm install github:XDGFX/ferrule#v0.3.0
+npm install github:XDGFX/ferrule#v0.5.0
 npx ferrule --prepend shared.yml --output-dir diagrams src/*.yml
 ```
 
