@@ -174,3 +174,8 @@ committed diagrams still match their YAML. Graphviz couldn't give it any of thos
 
 <sub>`docs/assets/` is generated. `scripts/make_readme_art.py` draws the banner and the pipeline.
 The example diagrams are hand-built mock-ups made before the layout engine existed.</sub>
+
+## Support
+
+Ferrule is free and open source. If it saved you some time, you can
+[sponsor me on GitHub](https://github.com/sponsors/XDGFX).
