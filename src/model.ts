@@ -98,6 +98,16 @@ export interface Harness {
    * Absent, the sheet stays one row.
    */
   wrap?: number;
+  /** Parts framed together on the sheet, such as everything inside one enclosure. */
+  groups?: Group[];
+}
+
+export interface Group {
+  id: string;
+  /** The frame's title. Empty, the frame has none. */
+  label: string;
+  /** The connectors inside the frame, by id. No connector is in two groups. */
+  members: string[];
 }
 
 export interface Mate {

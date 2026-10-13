@@ -47,13 +47,15 @@ ranges such as `1-4`; connection sets that start or end with a cable; and `==` m
 else is ignored, or is an error if it changes what connects to what.
 
 **Plumbing** is read from pipeviz YAML, chosen for any file with a top-level `components` or
-`pipes` key. Read: prepended files, deep-merged under the plan's own `diagram`, `templates` and
-`components`; `ref` and nested `template` chains; `ports` as names or objects, or `portcount`;
+`pipes` key. Read: prepended files, deep-merged under the plan's own `diagram`, `templates`,
+`components` and `groups`; `ref` and nested `template` chains; `ports` as names or objects, or `portcount`;
 `simple` fittings; `component:port`, `component.name` and fresh `component.` instances; ports by
 name or number, defaulting to the first; and `pipe^`, which turns the chain round. Each pipe in
 a chain is a fresh run, coloured by its `colour` or `service_rating` and weighted by its `size`.
 A pipe with `coil: true` draws its runs as a coil of six passes, for a long looped length such
-as an underfloor heating loop. Chains are checked against pipeviz's rules: an unknown name or
+as an underfloor heating loop. A top-level `groups` map frames the parts each group lists as
+`members`, under its `label`; a member is a part or a named instance, never a fresh one, and a
+part is in one group at most. Chains are checked against pipeviz's rules: an unknown name or
 port, or a pipe next to a pipe, is an error. ferrule is a little stricter: only a pipe may carry
 `^`, a chain turns round once, and a pipe takes no instance. Legacy `edges` and pipeviz's
 `--combined` sheet are not read. The `md` tables are written for wiring and read poorly for
@@ -137,6 +139,7 @@ still shows colour chips and boxed tags.
 | **Ports** | A port's thread and gender sit muted at the end of its row, such as `1/2" BSP · F`. |
 | **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its label at the turn, so the parts after it lie back beside the parts before it. |
 | **Coils** | A pipe with `coil: true` runs back and forth in six passes, its label above them: in place of the turn on a reversed pipe, or let into the middle of a straight run. |
+| **Groups** | A plumbing plan's `groups` each draw a quiet dashed frame with a small title round their members' cards and nothing else, beneath the cards and pipes. Pipes cross the border to reach a member. |
 | **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 

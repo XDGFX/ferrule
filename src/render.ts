@@ -60,6 +60,11 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .label{paint-order:stroke;stroke:var(--bg);stroke-width:3.5;stroke-linejoin:round}
 .glyph{fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}`;
 
+/** A group's frame: a quiet dashed outline. Only a sheet with groups carries the rule. */
+const FRAME_CSS = `
+.frame{fill:none;stroke:var(--faint);stroke-width:1.2;stroke-dasharray:7 5}`;
+const FRAME_RADIUS = 14;
+
 /**
  * The colours a sheet draws accents in, each as a theme variable. A colour is given as it looks in
  * life, which may be too pale for the light ground or too dark for the dark one, so each theme
@@ -145,6 +150,14 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
     text(g, 'x="24" y="36" font-size="20"', sheet.title, 600),
   ];
   if (caption) o.push(text(g, 'class="muted" x="24" y="56" font-size="11.5"', caption));
+  // Frames go down first, beneath the cards and the pipes that cross them.
+  for (const group of sheet.groups ?? []) {
+    const f = place.frames?.get(group.id);
+    if (!f) continue;
+    const p = shift(f);
+    o.push(`<rect class="frame" x="${n(p.x)}" y="${n(p.y)}" width="${n(f.w)}" height="${n(f.h)}" rx="${FRAME_RADIUS}"/>`);
+    if (group.label) o.push(text(g, `class="muted" x="${n(p.x + S.framePad)}" y="${n(p.y + S.framePad + S.frameTitleSize * 0.72)}" font-size="${S.frameTitleSize}" letter-spacing="${S.frameTitleSpacing}"`, group.label, 600));
+  }
   for (const c of sheet.cards) o.push(...drawCard(g, acc, c, at(c.id)));
 
   const tags: string[] = [];
@@ -185,7 +198,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
 
   const head = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(sheet.title)}">`,
-    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${css(acc.vars("light"), acc.vars("dark"))}</style>`,
+    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${css(acc.vars("light"), acc.vars("dark"))}${sheet.groups?.length ? FRAME_CSS : ""}</style>`,
   ];
   return [...head, ...o].join("\n");
 }
