@@ -5,12 +5,12 @@
 // reversed pipe, `pipe^`, turns the chain round, so what follows it is laid out heading back.
 //
 // Prepended files are parsed one by one and deep-merged, as pipeviz does: their `diagram`,
-// `templates` and `components` sit under the plan's own. Pipes and connections come only from the
-// plan. The rules come from pipeviz's validate_diagram() and the plumbing schema it implements.
+// `templates`, `components` and `groups` sit under the plan's own. Pipes and connections come only
+// from the plan. The rules come from pipeviz's validate_diagram() and the plumbing schema it implements.
 
 import { parse } from "yaml";
 import { hex, stripes } from "./colours.ts";
-import { DISPLAYS, GLYPHS, readWrap, type Cable, type Connector, type Display, type End, type Glyph, type Harness, type Link } from "./model.ts";
+import { DISPLAYS, GLYPHS, readWrap, type Cable, type Connector, type Display, type End, type Glyph, type Group, type Harness, type Link } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
@@ -125,6 +125,7 @@ export function readPipeviz(sources: string[], name: string): Harness {
   }
 
   const wrap = readWrap(diagram.wrap);
+  const groups = readGroups(merged("groups"), defs, pipeDefs, new Set(connectors.keys()));
   return {
     title: diagram.title == null ? titleCase(name) : String(diagram.title),
     connectors: [...connectors.values()],
@@ -132,7 +133,38 @@ export function readPipeviz(sources: string[], name: string): Harness {
     links,
     mates: [],
     ...(wrap ? { wrap } : {}),
+    ...(groups.length ? { groups } : {}),
   };
+}
+
+/**
+ * Reads `groups`: each a label and the parts framed together, named as a chain names them. A
+ * member no chain names is left out, since a group shared by several plans lists parts that only
+ * some of them draw; a group none of whose members is drawn is a mistake.
+ */
+function readGroups(defs: Yaml, components: Map<string, Yaml>, pipes: Yaml, drawn: Set<string>): Group[] {
+  const owner = new Map<string, string>();
+  return Object.entries(defs).map(([id, def]) => {
+    const where = `groups.${id}`;
+    if (!isMap(def)) throw new Error(`${where}: ${JSON.stringify(def)} should be a map with label and members`);
+    const { label, members, ...rest } = def;
+    const extra = Object.keys(rest);
+    if (extra.length) throw new Error(`${where}: unknown key ${extra.join(", ")}; only label and members are read`);
+    if (!Array.isArray(members) || !members.length) throw new Error(`${where}: members should be a list of parts`);
+    for (const m of members) {
+      const text = String(m);
+      const base = text.split(".")[0];
+      if (/[:^]/.test(text)) throw new Error(`${where}: ${text} should name a part, with no port or ^`);
+      if (base in pipes && !components.has(base)) throw new Error(`${where}: ${text} is a pipe, and only parts can be grouped`);
+      if (!components.has(base)) throw new Error(`${where}: no component is defined as ${base}`);
+      if (text.endsWith(".")) throw new Error(`${where}: ${text} is a fresh instance, which has no name to group by; name it, as in ${text}a`);
+      if (owner.has(text)) throw new Error(`${where}: ${text} is already in ${owner.get(text) === id ? "this group" : `group ${owner.get(text)}`}`);
+      owner.set(text, id);
+    }
+    const inside = members.map(String).filter((m) => drawn.has(m));
+    if (!inside.length) throw new Error(`${where}: none of its members is drawn`);
+    return { id, label: label == null ? "" : String(label), members: inside };
+  });
 }
 
 interface Token {

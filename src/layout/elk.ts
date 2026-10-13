@@ -7,8 +7,10 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 // elkjs is CommonJS: at runtime the default import is the constructor, but its types describe
 // the module, whose `default` is the constructor.
 const ELK = elkModule as unknown as typeof elkModule.default;
-import type { Card, Sheet, Wire } from "../sheet.ts";
-import type { Placement, Pt, Route } from "./types.ts";
+import { textWidth } from "../measure.ts";
+import type { Group } from "../model.ts";
+import { STYLE, type Card, type Sheet, type Wire } from "../sheet.ts";
+import type { Box, Placement, Pt, Route } from "./types.ts";
 
 export const ELK_OPTIONS: Record<string, string> = {
   "elk.algorithm": "layered",
@@ -189,9 +191,25 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     const width = Math.max(w.tag?.w ?? 0, (COIL_PASSES + 1) * coilPitch(w));
     return [{ text: w.tag?.text ?? "coil", width, height: (w.tag?.h ?? 0) + 2 * coilReach(w), layoutOptions: { "elk.edgeLabels.inline": "true" } }];
   };
+  const groups = sheet.groups ?? [];
+  const groupOf = new Map(groups.flatMap((g) => g.members.map((m) => [m, g.id] as const)));
+  // A turn sits inside a frame only when both its ends do, so the whole run stays inside.
+  for (const w of returning) {
+    const g = groupOf.get(w.from.card);
+    if (!g || g !== groupOf.get(w.to.card)) continue;
+    groupOf.set(`turn:${w.id}`, g);
+    // A plain turn's label hangs east of its node, so inside a frame the node grows to hold it.
+    const node = turns.find((t) => t.id === `turn:${w.id}`)!;
+    if (!w.coil && w.tag) node.width += Math.ceil(w.tag.w / 2 + w.weight / 2 + STYLE.labelGap);
+  }
   const graph: ElkNode = {
     id: "root",
-    layoutOptions: { ...ELK_OPTIONS, ...(sheet.wrap ? wrapOptions(sheet.wrap) : {}), ...options },
+    layoutOptions: {
+      ...ELK_OPTIONS,
+      ...(sheet.wrap ? wrapOptions(sheet.wrap) : {}),
+      ...(groups.length ? { "elk.hierarchyHandling": "INCLUDE_CHILDREN" } : {}),
+      ...options,
+    },
     children: [
       ...sheet.cards.filter((c) => !inPair.has(c.id)).map((c) => ({
         id: c.id,
@@ -226,8 +244,22 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     ],
   };
 
+  if (groups.length) graph.children = framed(graph.children!, groups, groupOf);
+
   const out = await new ELK().layout(graph);
-  const cards = new Map(out.children!.map((n) => [n.id, { x: n.x!, y: n.y! }]));
+  // ELK places a frame's children, and any edge wholly inside it, relative to the frame.
+  const frames = new Map<string, Box>();
+  const origin = new Map<string, Pt>([["root", { x: 0, y: 0 }]]);
+  const cards = new Map<string, Pt>();
+  for (const n of out.children!) {
+    if (!n.id.startsWith(FRAME)) {
+      cards.set(n.id, { x: n.x!, y: n.y! });
+      continue;
+    }
+    frames.set(n.id.slice(FRAME.length), { x: n.x!, y: n.y!, w: n.width!, h: n.height! });
+    origin.set(n.id, { x: n.x!, y: n.y! });
+    for (const c of n.children!) cards.set(c.id, { x: n.x! + c.x!, y: n.y! + c.y! });
+  }
   const routes = new Map<string, Route>();
   for (const { id, a, b, mate } of paired) {
     const at = cards.get(id)!;
@@ -241,16 +273,17 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     routes.set(mate, { kind: "poly", points });
   }
   const edges = new Map((out.edges as ElkExtendedEdge[]).map((e) => [e.id, e]));
+  const from = (e: ElkExtendedEdge) => origin.get((e as { container?: string }).container ?? "root")!;
   const points = (e: ElkExtendedEdge) => {
-    const s = e.sections![0];
-    return [s.startPoint, ...(s.bendPoints ?? []), s.endPoint].map(({ x, y }) => ({ x, y }));
+    const s = e.sections![0], o = from(e);
+    return [s.startPoint, ...(s.bendPoints ?? []), s.endPoint].map(({ x, y }) => ({ x: x + o.x, y: y + o.y }));
   };
   const coils = new Map(sheet.wires.filter((w) => w.coil).map((w) => [w.id, w]));
   const legs = new Set(returning.flatMap((w) => [`${w.id}/a`, `${w.id}/b`]));
   for (const e of edges.values()) {
     if (legs.has(e.id)) continue;
     const label = e.labels?.[0];
-    const tag = label ? { x: label.x! + label.width! / 2, y: label.y! + label.height! / 2 } : undefined;
+    const tag = label ? { x: from(e).x + label.x! + label.width! / 2, y: from(e).y + label.y! + label.height! / 2 } : undefined;
     const coiled = tag && coils.has(e.id) ? coilInline(points(e), tag, coils.get(e.id)!) : undefined;
     routes.set(e.id, coiled ? { kind: "poly", ...coiled } : { kind: "poly", points: points(e), tag });
   }
@@ -270,5 +303,40 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     const x = turn.x + (w.tag?.w ?? TURN_GAP) / 2;
     routes.set(w.id, { kind: "poly", points: [...a, { x, y: ya }, { x, y: yb }, ...b], tag: { x, y: (ya + yb) / 2 } });
   }
-  return { engine: "elk", width: out.width!, height: out.height!, cards, routes };
+  return { engine: "elk", width: out.width!, height: out.height!, cards, routes, ...(groups.length ? { frames } : {}) };
+}
+
+const FRAME = "frame:";
+
+/**
+ * The sheet's nodes with each group's members moved inside a node of their own, which ELK lays
+ * out as a box round them and nothing else. The frame takes the place of its first member, so
+ * the order parts were first named in still orders the sheet.
+ */
+function framed(nodes: ElkNode[], groups: Group[], groupOf: Map<string, string>): ElkNode[] {
+  const s = STYLE;
+  const frames = new Map<string, ElkNode>(groups.map((g) => {
+    const top = s.framePad + (g.label ? s.frameTitleH : 0);
+    const title = Math.ceil(textWidth(g.label, s.frameTitleSize, 600) + g.label.length * s.frameTitleSpacing) + 2 * s.framePad;
+    return [g.id, {
+      id: FRAME + g.id,
+      layoutOptions: {
+        ...ELK_OPTIONS,
+        // elkjs throws when it orders a nested graph by model order, so a frame's inside goes without.
+        "elk.layered.considerModelOrder.strategy": "NONE",
+        "elk.padding": `[top=${top},left=${s.framePad},bottom=${s.framePad},right=${s.framePad}]`,
+        // A frame is never narrower than its title.
+        "elk.nodeSize.constraints": "MINIMUM_SIZE",
+        "elk.nodeSize.minimum": `(${title},${top + s.framePad})`,
+      },
+      children: [],
+    }];
+  }));
+  const out: ElkNode[] = [];
+  for (const n of nodes) {
+    const frame = frames.get(groupOf.get(n.id) ?? "");
+    if (!frame) out.push(n);
+    else if (frame.children!.push(n) === 1) out.push(frame);
+  }
+  return out;
 }

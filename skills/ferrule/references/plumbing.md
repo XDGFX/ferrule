@@ -1,8 +1,8 @@
 # Plumbing: the pipeviz syntax ferrule reads
 
 A plan has `components`, `pipes` and `connections`. Each prepended file is parsed on its own and
-deep-merged under the plan: its `diagram`, `templates` and `components` sit beneath the plan's
-own. `pipes` and `connections` come from the plan alone, so declare every pipe in the plan that
+deep-merged under the plan: its `diagram`, `templates`, `components` and `groups` sit beneath the
+plan's own. `pipes` and `connections` come from the plan alone, so declare every pipe in the plan that
 uses it. The sheet is titled by `diagram.title`, or else the file name in title case.
 
 ## Templates and components
@@ -126,6 +126,35 @@ Rules, each enforced:
 - Every port named must exist.
 - A chain turns round once at most, and only a pipe carries `^`.
 - Every name must be declared in `components` or `pipes`.
+
+## Groups
+
+```yaml
+groups:
+  water_box:
+    label: WATER BOX              # the frame's title; optional
+    members: [pump, accumulator, tee.t1, adapter.tap_in]
+```
+
+A group draws a dashed frame, titled at its top left, round its members' cards and nothing else.
+It sits beneath the cards and pipes, and a pipe crosses its border to reach a member. Opt-in: a
+plan with no `groups` draws as before.
+
+- A member is a part as a chain names it: `pump` or a named instance, `tee.t1`. No port, no `^`.
+- A fresh instance (`adapter.`) has no name to list, so it can't be a member. A fitting between
+  two members that is not one itself is drawn outside the frame, and the pipes to it go the long
+  way round. Name it in the chain (`adapter.tap_in`) and list it.
+- A member no chain names is left out, so a group in a prepended file can list parts that only
+  some plans draw. A group with none of its members drawn is an error: keep a group out of a
+  shared file if some plan draws nothing in it.
+- A part is in one group at most, and groups do not nest.
+- A run that turns round (`pipe^`) between two members of one group stays inside its frame.
+- With `diagram.wrap`, a frame is kept whole on one row.
+- Errors: a member that is not a declared component, a pipe, a fresh instance, a part listed
+  twice or in two groups, a missing or empty `members`, and any key but `label` and `members`.
+
+Parts inside a frame are ordered by ELK alone, not by where `connections` first names them, so
+a plan may lay out differently once it has a group.
 
 ## Layout
 

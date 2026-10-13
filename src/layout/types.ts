@@ -18,4 +18,11 @@ export interface Placement {
   height: number;
   cards: Map<string, Pt>;
   routes: Map<string, Route>;
+  /** Each group's frame, by group id, when the sheet has groups. */
+  frames?: Map<string, Box>;
+}
+
+export interface Box extends Pt {
+  w: number;
+  h: number;
 }

@@ -2,7 +2,7 @@
 // them. Both layout engines start from this, so any difference in their output is layout alone.
 
 import { textWidth } from "./measure.ts";
-import type { Cable, Connector, Display, Glyph, Harness } from "./model.ts";
+import type { Cable, Connector, Display, Glyph, Group, Harness } from "./model.ts";
 
 /** The Instrument style's fixed dimensions, in px. */
 export const STYLE = {
@@ -45,6 +45,11 @@ export const STYLE = {
   /** A run's label, as plain text above the run: its size, and its gap from the line. */
   labelSize: 10,
   labelGap: 4,
+  /** A group's frame: its gap from the cards inside, and the band its title takes at the top. */
+  framePad: 14,
+  frameTitleH: 18,
+  frameTitleSize: 10.5,
+  frameTitleSpacing: 0.6,
 };
 
 export interface Row {
@@ -119,6 +124,8 @@ export interface Sheet {
   wires: Wire[];
   /** The aspect ratio to aim for when wrapping into rows. Absent, the sheet stays one row. */
   wrap?: number;
+  /** Frames drawn round the cards they name. No card is in two. */
+  groups?: Group[];
 }
 
 /**
@@ -184,7 +191,7 @@ export function buildSheet(h: Harness): Sheet {
     cards.push(connectorCard(c, pins, inUse, repeated));
   }
   for (const c of h.cables) if (!isRun(c)) cards.push(cableCard(c, used.get(c.id) ?? new Map(), repeated));
-  return { title: h.title, cards, wires, ...(h.wrap ? { wrap: h.wrap } : {}) };
+  return { title: h.title, cards, wires, ...(h.wrap ? { wrap: h.wrap } : {}), ...(h.groups ? { groups: h.groups } : {}) };
 }
 
 /**
