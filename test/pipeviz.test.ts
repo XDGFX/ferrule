@@ -152,6 +152,16 @@ test("rejects what pipeviz rejects", () => {
   assert.throws(() => read(`components:\n  x:\n    label: X\n    simple: true\n    glyph: boiler\nconnections:\n  - [x, x.b]\n`, []), /glyph "boiler" should be one of valve/);
 });
 
+test("a pipe is coiled only when it asks, and any other coil value is an error", () => {
+  const coiled = (value: string) => read(plan.replace("    size: 3/4\"\n", `    size: 3/4"\n    coil: ${value}\n`) + "  - - tank.a:LOW\n    - loop\n    - tank.b:LOW\n");
+  const coil = (h: Harness) => h.cables.map((c) => [c.template, c.coil]).filter(([, on]) => on != null);
+  assert.deepEqual(coil(coiled("true")), [["loop", true]]);
+  assert.deepEqual(coil(coiled("false")), []);
+  assert.deepEqual(coil(h), []);
+  assert.throws(() => coiled("loose"), /pipe loop: coil "loose" should be true or false/);
+  assert.throws(() => coiled("4"), /pipe loop: coil 4 should be true or false/);
+});
+
 test("reads display and glyph from a template, and leaves them unset where none is given", () => {
   const h = read(`
 templates:

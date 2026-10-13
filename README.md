@@ -52,10 +52,12 @@ else is ignored, or is an error if it changes what connects to what.
 `simple` fittings; `component:port`, `component.name` and fresh `component.` instances; ports by
 name or number, defaulting to the first; and `pipe^`, which turns the chain round. Each pipe in
 a chain is a fresh run, coloured by its `colour` or `service_rating` and weighted by its `size`.
-Chains are checked against pipeviz's rules: an unknown name or port, or a pipe next to a pipe, is
-an error. ferrule is a little stricter: only a pipe may carry `^`, a chain turns round once, and
-a pipe takes no instance. Legacy `edges` and pipeviz's `--combined` sheet are not read. The
-`md` tables are written for wiring and read poorly for plumbing.
+A pipe with `coil: true` draws its runs as a coil of six passes, for a long looped length such
+as an underfloor heating loop. Chains are checked against pipeviz's rules: an unknown name or
+port, or a pipe next to a pipe, is an error. ferrule is a little stricter: only a pipe may carry
+`^`, a chain turns round once, and a pipe takes no instance. Legacy `edges` and pipeviz's
+`--combined` sheet are not read. The `md` tables are written for wiring and read poorly for
+plumbing.
 
 **Wrapping into rows** is off by default, so a long sheet stays one wide row. A diagram can ask
 for rows in its YAML, in a loom or a plumbing plan, or in a prepended file:
@@ -134,6 +136,7 @@ still shows colour chips and boxed tags.
 | **Pipes** | A run labelled with the pipe's name, coloured by service (potable blue, hot red, waste brown, vent olive) unless it has its own colour. Line weight follows bore, so a pipe reads heavier than any cable. Parts that screw straight together are joined by a short unlabelled line. |
 | **Ports** | A port's thread and gender sit muted at the end of its row, such as `1/2" BSP · F`. |
 | **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its label at the turn, so the parts after it lie back beside the parts before it. |
+| **Coils** | A pipe with `coil: true` runs back and forth in six passes, its label above them: in place of the turn on a reversed pipe, or let into the middle of a straight run. |
 | **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 
