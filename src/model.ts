@@ -60,6 +60,8 @@ export interface Cable {
   bore?: number | null;
   /** What a single run is called on its tag, ahead of its size and length. */
   label?: string;
+  /** A pipe that is one long looped length, such as an underfloor heating loop: its runs draw coiled. */
+  coil?: boolean;
   length: string;
   wires: CableWire[];
   accent: string;

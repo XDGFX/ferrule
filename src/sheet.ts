@@ -104,6 +104,8 @@ export interface Wire {
   kind?: "mate";
   /** The wire doubles back, leaving both ends on their east side. */
   returns?: boolean;
+  /** The run is one long looped length, drawn as a serpentine. */
+  coil?: boolean;
   from: { card: string; port: string };
   to: { card: string; port: string };
   colours: string[];
@@ -155,6 +157,7 @@ export function buildSheet(h: Harness): Sheet {
         from: touch(l.from.connector, l.from.pin, "E"),
         to: touch(l.to.connector, l.to.pin, l.returns ? "E" : "W"),
         ...(l.returns && { returns: true }),
+        ...(c.coil && { coil: true }),
         ...base,
         tag: tag(c, base.weight),
       });

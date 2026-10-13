@@ -30,6 +30,11 @@ export function readPipeviz(sources: string[], name: string): Harness {
   const templates = merged("templates");
   const library = merged("components");
   const pipeDefs: Yaml = plan.pipes ?? {};
+  for (const [key, def] of Object.entries(pipeDefs)) {
+    if (def?.coil != null && typeof def.coil !== "boolean") {
+      throw new Error(`pipe ${key}: coil ${JSON.stringify(def.coil)} should be true or false`);
+    }
+  }
 
   const defs = new Map<string, Yaml>();
   for (const key of Object.keys(library)) defs.set(key, check(key, resolve(key, library, templates, [])));
@@ -66,6 +71,7 @@ export function readPipeviz(sources: string[], name: string): Harness {
       gauge: null,
       bore: bore(def.size),
       label: def.label == null ? "" : String(def.label),
+      ...(def.coil === true && { coil: true }),
       length: def.length == null ? "" : String(def.length),
       wires: [{ index: 1, label: "", code: "", colours }],
       accent: hex(colour),

@@ -69,9 +69,17 @@ pipes:
     colour: OG                    # or color; a colour code or hex, which beats the service
     material: PVC
     length: 1.2 m                 # joins the label
+    coil: true                    # draw each run as a coil; off by default
 ```
 
 Any other `service_rating` draws grey; give the pipe a `colour` instead.
+
+`coil: true` is for a pipe that is really one long looped length, such as an underfloor heating
+loop. Each of its runs is drawn as six passes back and forth in the pipe's own colour and weight,
+with the label above the coil. On `pipe^` the coil takes the place of the turn; on a straight run
+it is let into the middle of the line, which is drawn plain if ELK leaves no level stretch long
+enough to hold it. A run with an open end is a card, not a line, and never coils. Any `coil`
+value other than `true` or `false` is an error.
 
 ## Connections
 
