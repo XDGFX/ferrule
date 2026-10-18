@@ -185,3 +185,10 @@ The example diagrams are hand-built mock-ups made before the layout engine exist
 
 Ferrule is free and open source. If it saved you some time, you can
 [sponsor me on GitHub](https://github.com/sponsors/XDGFX).
+
+## Licence
+
+ferrule is licensed under the [Mozilla Public License 2.0](LICENSE). You can use it in any
+project, open or closed. If you distribute changes to ferrule's own files, you publish those files
+under the same licence. Diagrams you draw with ferrule are yours, and the licence does not apply
+to them.
