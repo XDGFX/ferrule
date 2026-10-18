@@ -34,6 +34,9 @@ const TITLE_BAND = 76;
 const RADIUS = 9;
 const FILLET = 14;
 const CASING = 1.2;
+/** A mate's dots: their spacing, which is also the clear space left to each card, and their radius. */
+export const MATE_PERIOD = 8;
+const MATE_DOT = 2.5;
 
 const vars = (t: Record<string, string>) => Object.entries(t).map(([k, v]) => `--${k}:${v}`).join(";");
 
@@ -52,7 +55,7 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .core{fill:none;stroke-linejoin:round}
 .tag{fill:var(--tag-bg);stroke:var(--line);stroke-width:1}
 .port{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
-.mate{fill:none;stroke:var(--muted);stroke-linecap:round;stroke-linejoin:round}
+.mate{fill:var(--muted)}
 .cap{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round}
 .pill{fill:var(--pill)}
 .pill-text{fill:var(--pill-text)}
@@ -166,7 +169,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
     const r = place.routes.get(w.id)!;
     const pts = r.points.map(shift);
     if (w.kind === "mate") {
-      o.push(...drawMate(path(r.kind, pts)));
+      o.push(drawMate(mateDots(pts)));
       continue;
     }
     o.push(...drawWire(path(r.kind, pts), w));
@@ -304,8 +307,30 @@ function drawSwatch(x: number, cy: number, colours: string[]): string[] {
 }
 
 /** Two connectors plugged together: a chain of dots, which no wire is drawn as. */
-function drawMate(d: string): string[] {
-  return [`<path class="mate" d="${d}" stroke-width="5" stroke-dasharray="0 8"/>`];
+function drawMate(dots: Pt[]): string {
+  return `<g class="mate">${dots.map((p) => `<circle cx="${n(p.x)}" cy="${n(p.y)}" r="${MATE_DOT}"/>`).join("")}</g>`;
+}
+
+/**
+ * Where a mate's dots sit along its route: one period apart, centred, and at least one period
+ * clear of each card. A route too short for that still gets one dot, at its middle.
+ */
+export function mateDots(route: Pt[]): Pt[] {
+  const legs = route.slice(1).map((b, i) => ({ a: route[i], b, len: Math.hypot(b.x - route[i].x, b.y - route[i].y) }));
+  const total = legs.reduce((s, l) => s + l.len, 0);
+  const count = Math.max(1, Math.floor((total - 2 * MATE_PERIOD) / MATE_PERIOD + 1e-9) + 1);
+  const first = (total - (count - 1) * MATE_PERIOD) / 2;
+  const along = (d: number): Pt => {
+    for (const { a, b, len } of legs) {
+      if (d <= len || b === route.at(-1)) {
+        const t = len ? Math.min(d / len, 1) : 0;
+        return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+      }
+      d -= len;
+    }
+    return route[0];
+  };
+  return Array.from({ length: count }, (_, i) => along(first + i * MATE_PERIOD));
 }
 
 /** A bridge between two pins of one connector, drawn as a short grey wire looping off its side. */
