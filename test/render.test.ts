@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { layoutElk } from "../src/layout/elk.ts";
-import { clamp, flatten, nearest, render } from "../src/render.ts";
+import { clamp, flatten, MATE_PERIOD, mateDots, nearest, render } from "../src/render.ts";
 import { buildSheet } from "../src/sheet.ts";
 import { readPipeviz } from "../src/pipeviz.ts";
 import { readWireviz } from "../src/wireviz.ts";
@@ -62,6 +62,25 @@ test("a mated pair is laid out side by side, joined by a short mate", async () =
   const pw = sheet.cards.find((c) => c.id === "P")!.w;
   assert.equal(p.y, s.y);
   assert.ok(s.x > p.x + pw && s.x - (p.x + pw) < 80);
+  const out = await render(sheet, place);
+  const dots = out.match(/<g class="mate">(.*?)<\/g>/)![1].match(/<circle /g)!;
+  assert.equal(dots.length, mateDots(place.routes.get(sheet.wires.find((w) => w.kind === "mate")!.id)!.points).length);
+});
+
+test("a mate's dots sit one period apart, centred, one period clear of each card", () => {
+  const P = MATE_PERIOD;
+  const xs = (route: { x: number; y: number }[]) => mateDots(route).map((d) => d.x);
+  assert.deepEqual(xs([{ x: 0, y: 0 }, { x: 6 * P, y: 0 }]), [P, 2 * P, 3 * P, 4 * P, 5 * P]);
+  assert.deepEqual(xs([{ x: 0, y: 0 }, { x: 6.5 * P, y: 0 }]), [1.25 * P, 2.25 * P, 3.25 * P, 4.25 * P, 5.25 * P]);
+  assert.deepEqual(
+    mateDots([{ x: 0, y: 0 }, { x: 3 * P, y: 0 }, { x: 3 * P, y: 3 * P }, { x: 6 * P, y: 3 * P }]),
+    [1, 2, 3, 4, 5, 6, 7, 8].map((k) => (k <= 3 ? { x: k * P, y: 0 } : k <= 6 ? { x: 3 * P, y: (k - 3) * P } : { x: (k - 3) * P, y: 3 * P })),
+  );
+});
+
+test("a mate too short for two clear dots draws one, at its middle", () => {
+  assert.deepEqual(mateDots([{ x: 0, y: 0 }, { x: 1.5 * MATE_PERIOD, y: 0 }]), [{ x: 0.75 * MATE_PERIOD, y: 0 }]);
+  assert.deepEqual(mateDots([{ x: 0, y: 0 }, { x: 0.5 * MATE_PERIOD, y: 0 }]), [{ x: 0.25 * MATE_PERIOD, y: 0 }]);
 });
 
 const crosslink = `
