@@ -52,7 +52,7 @@ components:
 |---|---|
 | `card` | The full card: title, subtitle, ports and description. The default. |
 | `pill` | A minor part, such as an adapter or tee: a borderless muted line, no subtitle or description. A simple pill is one line; one with ports keeps them as tight rows. |
-| `exit` | Where a run leaves the sheet, such as `FROM OTHER SYSTEM`: a tag with an arrow on its east end, every port on its centre line. |
+| `exit` | Where a run leaves the sheet, such as `FROM OTHER SYSTEM`: a tag with an arrow on its east end, every port on its centre line. Joined straight to one port, with no pipe between, it sits a short stub from that port, inside the port's frame if it has one. |
 
 `glyph` is one of `valve`, `pump`, `filter`, `heater`, `tank`, `trap`, `vent` or `fixture`: a
 small P&ID-style symbol in the template colour before a full card's title. Pills and exits draw
@@ -116,6 +116,37 @@ connections:
   side, such as a crosslink or a loop out and back.
 - Two parts side by side, with no pipe between them, are joined directly by a short unlabelled
   line.
+
+### Flow and accents
+
+A connection can also be a map that names its chain, so it can say what the chain carries.
+Both keys are opt-in: a plan that uses neither draws as before.
+
+```yaml
+connections:
+  - flow: forward                 # forward, reverse or none; read along the chain as written
+    accent: "#d55e00"             # a colour code or #rrggbb: a tracing line beside every link
+    accent_side: both             # both (default), left or right, looking along the chain
+    chain:
+      - heater:COOLANT_OUT
+      - hose_19mm
+      - tee.exchangers:A
+```
+
+- **`flow`** draws a small chevron cut into each run of the chain, pointing the way coolant
+  moves: on the run's longest free stretch, clear of corners, ports, its label and any line
+  crossing it. `reverse` is for a chain written against the flow; `none` draws nothing. Past a
+  `pipe^` the chain still reads in the order written.
+- **`accent`** draws a thin line in its colour on one or both sides of every run and fitting
+  hop in the chain, following each bend, and leaves the hose's own colour and weight alone.
+  Use it to trace a circuit (hot flow, return) across hoses of one type, instead of a new pipe
+  with its own `colour`, since colour means hose type. Define each circuit's colour once with
+  a YAML anchor. A sheet with any accent spaces its lines a little further apart.
+- One chain carries one flow and one accent. Where a circuit changes partway, such as at a
+  load, split the chain at a named instance (`part.name`) both halves share.
+- Errors: a `flow` other than forward, reverse or none; an `accent` that is neither a colour
+  code nor `#rrggbb`; an `accent_side` other than both, left or right, or without an `accent`;
+  any key but `chain`, `flow`, `accent` and `accent_side`.
 
 Rules, each enforced:
 
