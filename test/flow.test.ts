@@ -134,3 +134,12 @@ test("an accent runs beside its run, on the sides it names, and leaves the run's
   assert.deepEqual(right.map((l) => l.y), [below.y]);
   assert.doesNotMatch(plain.svg, /accent/);
 });
+
+test("a short unlabelled hop between two fittings that screw together carries no chevron", async () => {
+  const { sheet, place, svg } = await draw("  - chain: [heater:OUT, hose, adapter.a, adapter.b, hose, tee:A]\n    flow: forward\n");
+  const hop = sheet.wires.find((w) => !w.tag)!;
+  const [a, b] = [place.routes.get(hop.id)!.points[0], place.routes.get(hop.id)!.points.at(-1)!];
+  const marks = chevrons(svg);
+  assert.equal(marks.length, 2);
+  for (const m of marks) assert.ok(m.x < a.x || m.x > b.x);
+});

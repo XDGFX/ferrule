@@ -24,6 +24,8 @@ const END_CLEAR = 14;
 const PAD = 8;
 /** The vertical room a label beside a vertical stretch takes. */
 const LABEL_H = 12;
+/** The least free line a chevron is put on, on a run with no label. */
+const MIN_FREE = 64;
 /** A stretch with this much free line gets a chevron of its own, beyond the run's first. */
 const EXTRA_RUN = 360;
 
@@ -65,7 +67,9 @@ export function flowMarks(run: FlowRun, others: { points: Pt[]; weight: number }
         blocked.push([along(c) - half, along(c) + half]);
       }
     }
-    const free = gaps(lo, hi, blocked).filter(([x, y]) => y - x >= need);
+    // A short unlabelled hop, such as between two fittings that screw together, reads plainly
+    // enough without one.
+    const free = gaps(lo, hi, blocked).filter(([x, y]) => y - x >= (run.label ? need : Math.max(need, MIN_FREE)));
     if (!free.length) continue;
     // The middle of the longest free stretch, so a chevron sits midway between a label and a port
     // rather than crowding either.
