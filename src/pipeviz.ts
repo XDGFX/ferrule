@@ -9,8 +9,8 @@
 // from the plan. The rules come from pipeviz's validate_diagram() and the plumbing schema it implements.
 
 import { parse } from "yaml";
-import { hex, stripes } from "./colours.ts";
-import { DISPLAYS, GLYPHS, readWrap, type Cable, type Connector, type Display, type End, type Glyph, type Group, type Harness, type Link } from "./model.ts";
+import { hex, stripes, WIRE } from "./colours.ts";
+import { ACCENT_SIDES, DISPLAYS, GLYPHS, readWrap, type Accent, type Cable, type Flow, type Connector, type Display, type End, type Glyph, type Group, type Harness, type Link } from "./model.ts";
 
 type Yaml = Record<string, any>;
 
@@ -81,9 +81,12 @@ export function readPipeviz(sources: string[], name: string): Harness {
     return cable;
   }
 
-  for (const [i, chain] of ((plan.connections ?? []) as unknown[][]).entries()) {
+  for (const [i, entry] of ((plan.connections ?? []) as unknown[]).entries()) {
     const where = `connections[${i}]`;
+    let chain = entry as unknown[];
     try {
+      const opts = chainOptions(entry);
+      chain = opts.chain;
       if (!Array.isArray(chain) || chain.length < 2) throw new Error("a chain needs at least two tokens");
       const tokens = chain.map((t) => token(String(t), defs, pipeDefs));
       tokens.forEach((t, j) => {
@@ -94,9 +97,13 @@ export function readPipeviz(sources: string[], name: string): Harness {
       if (turns.length && !turns[0].pipe) throw new Error(`${turns[0].base}^: only a pipe can turn a chain round`);
 
       const steps = tokens.map((t) => ({ t, end: t.pipe ? null : end(part(t), t) }));
+      // Links read backwards past a turn run against the chain, so their flow and sides swap.
+      let backwards = false;
       const link = (pipe: Token | null, from: End | null, to: End | null, returns = false) => {
         const cable = pipe ? run(pipe.base, pipeDefs[pipe.base] ?? {}) : run("", {});
-        links.push({ cable: cable.id, wire: 1, from, to, ...(returns && { returns }) });
+        const flow = opts.flow && (backwards ? FLIP[opts.flow] : opts.flow);
+        const accent = opts.accent && { ...opts.accent, side: backwards ? FLIP[opts.accent.side] : opts.accent.side };
+        links.push({ cable: cable.id, wire: 1, from, to, ...(returns && { returns }), ...(flow && { flow }), ...(accent && { accent }) });
       };
       // Each pipe joins its neighbours; two parts side by side mate directly.
       const walk = (seq: typeof steps) =>
@@ -111,6 +118,7 @@ export function readPipeviz(sources: string[], name: string): Harness {
       else {
         walk(steps.slice(0, turn));
         link(tokens[turn], steps[turn - 1]?.end ?? null, steps[turn + 1]?.end ?? null, true);
+        backwards = true;
         walk(steps.slice(turn + 1).reverse());
       }
     } catch (err) {
@@ -165,6 +173,46 @@ function readGroups(defs: Yaml, components: Map<string, Yaml>, pipes: Yaml, draw
     if (!inside.length) throw new Error(`${where}: none of its members is drawn`);
     return { id, label: label == null ? "" : String(label), members: inside };
   });
+}
+
+const FLIP = { forward: "reverse", reverse: "forward", both: "both", left: "right", right: "left" } as const;
+
+interface ChainOptions {
+  chain: unknown[];
+  flow?: Flow;
+  accent?: Accent;
+}
+
+/**
+ * A connection is a chain of tokens, or a map naming the chain with what it carries: `flow`
+ * (forward runs as the chain is written, reverse against it, none shows nothing) and an `accent`
+ * colour drawn beside every link, on `accent_side` of it looking along the chain.
+ */
+function chainOptions(entry: unknown): ChainOptions {
+  if (!isMap(entry)) return { chain: entry as unknown[] };
+  const { chain, flow, accent, accent_side: side, ...rest } = entry;
+  const extra = Object.keys(rest);
+  if (extra.length) throw new Error(`unknown key ${extra.join(", ")}; only chain, flow, accent and accent_side are read`);
+  if (flow != null && !["forward", "reverse", "none"].includes(flow)) {
+    throw new Error(`flow ${JSON.stringify(flow)} should be forward, reverse or none`);
+  }
+  if (side != null && !(ACCENT_SIDES as readonly unknown[]).includes(side)) {
+    throw new Error(`accent_side ${JSON.stringify(side)} should be ${ACCENT_SIDES.slice(0, -1).join(", ")} or ${ACCENT_SIDES.at(-1)}`);
+  }
+  if (side != null && accent == null) throw new Error("accent_side needs an accent");
+  return {
+    chain: Array.isArray(chain) ? chain : [],
+    ...(flow != null && flow !== "none" && { flow }),
+    ...(accent != null && { accent: { colour: accentColour(accent), side: side ?? "both" } }),
+  };
+}
+
+function accentColour(value: unknown): string {
+  const s = String(value);
+  if (/^#[0-9a-f]{6}$/i.test(s)) return s.toLowerCase();
+  const code = s.toUpperCase();
+  if (code in WIRE) return WIRE[code];
+  throw new Error(`accent ${JSON.stringify(value)} should be a colour code or a #rrggbb hex value`);
 }
 
 interface Token {

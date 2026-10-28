@@ -84,6 +84,20 @@ export interface Link {
    * out back towards where it started. Pipeviz writes this as `pipe^`.
    */
   returns?: boolean;
+  /** Which way the run carries flow: from `from` to `to`, or back. Absent, it shows none. */
+  flow?: Flow;
+  /** A thin line drawn beside the run to trace its circuit, without changing the run's own colour. */
+  accent?: Accent;
+}
+
+export type Flow = "forward" | "reverse";
+
+export const ACCENT_SIDES = ["both", "left", "right"] as const;
+
+export interface Accent {
+  colour: string;
+  /** Which side of the run, looking from `from` towards `to`. */
+  side: (typeof ACCENT_SIDES)[number];
 }
 
 export interface Harness {
