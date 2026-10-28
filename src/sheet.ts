@@ -2,7 +2,7 @@
 // them. Both layout engines start from this, so any difference in their output is layout alone.
 
 import { textWidth } from "./measure.ts";
-import type { Cable, Connector, Display, Glyph, Group, Harness } from "./model.ts";
+import type { Accent, Cable, Connector, Display, Glyph, Group, Harness } from "./model.ts";
 
 /** The Instrument style's fixed dimensions, in px. */
 export const STYLE = {
@@ -50,7 +50,18 @@ export const STYLE = {
   frameTitleH: 18,
   frameTitleSize: 10.5,
   frameTitleSpacing: 0.6,
+  /** Every core's hairline casing, each side of its line. */
+  casing: 1.2,
+  /** A tracing accent: its line width, and its gap from the casing of the run it follows. */
+  accentW: 1.5,
+  accentGap: 1.6,
 };
+
+/** How far from a run's centre line its accent's outer edge lies. */
+export const accentReach = (weight: number) => weight / 2 + STYLE.casing + STYLE.accentGap + STYLE.accentW;
+
+/** How far above a run's centre line its label sits: past its accent, when it has one. */
+export const labelOffset = (weight: number, accent: boolean) => (accent ? accentReach(weight) : weight / 2) + STYLE.labelGap;
 
 export interface Row {
   key: string;
@@ -116,6 +127,10 @@ export interface Wire {
   colours: string[];
   weight: number;
   tag?: Tag;
+  /** +1 when flow runs from `from` to `to`, -1 when it runs back. Absent, the wire shows none. */
+  flow?: 1 | -1;
+  /** A tracing line beside the wire, its side looking from `from` towards `to`. */
+  accent?: Accent;
 }
 
 export interface Sheet {
@@ -157,7 +172,12 @@ export function buildSheet(h: Harness): Sheet {
   for (const [i, l] of h.links.entries()) {
     const c = cables.get(l.cable)!;
     const core = c.wires[l.wire - 1];
-    const base = { colours: core.colours.length ? core.colours : ["GY"], weight: weight(c.gauge, c.bore ?? null) };
+    const base = {
+      colours: core.colours.length ? core.colours : ["GY"],
+      weight: weight(c.gauge, c.bore ?? null),
+      ...(l.flow && { flow: (l.flow === "forward" ? 1 : -1) as 1 | -1 }),
+      ...(l.accent && { accent: l.accent }),
+    };
     if (isRun(c) && l.from && l.to) {
       wires.push({
         id: `w${i}`,
@@ -166,7 +186,7 @@ export function buildSheet(h: Harness): Sheet {
         ...(l.returns && { returns: true }),
         ...(c.coil && { coil: true }),
         ...base,
-        tag: tag(c, base.weight),
+        tag: tag(c, base.weight, !!l.accent),
       });
       continue;
     }
@@ -198,10 +218,10 @@ export function buildSheet(h: Harness): Sheet {
  * A run's label. It's drawn as plain text just above the line, so the layout reserves its height
  * on both sides: the line stays centred in the space and the text clears whatever is above.
  */
-function tag(c: Cable, weight: number): Tag | undefined {
+function tag(c: Cable, weight: number, accent = false): Tag | undefined {
   const text = [c.label ?? "", cableSpec(c)].filter(Boolean).join(" · ");
   if (!text) return undefined;
-  const above = weight / 2 + STYLE.labelGap + STYLE.labelSize;
+  const above = labelOffset(weight, accent) + STYLE.labelSize;
   return { text, w: Math.ceil(textWidth(text, STYLE.labelSize, 500) + 8), h: Math.ceil(2 * above) };
 }
 

@@ -5,9 +5,10 @@
 
 import { WIRE } from "./colours.ts";
 import type { Placement, Pt, Route } from "./layout/types.ts";
+import { chevronDepth, flowMarks, type Mark } from "./flow.ts";
 import { FACES, fontFaces, type Face } from "./measure.ts";
 import type { Glyph } from "./model.ts";
-import { STYLE as S, tagWidth, titleX, type Card, type Sheet, type Wire } from "./sheet.ts";
+import { accentReach, labelOffset, STYLE as S, tagWidth, titleX, type Card, type Sheet, type Wire } from "./sheet.ts";
 
 // A white core on a white card needs a darker casing than the rest to stay visible; a black one
 // on the dark ground needs a lighter one.
@@ -33,7 +34,7 @@ export const THEMES = {
 const TITLE_BAND = 76;
 const RADIUS = 9;
 const FILLET = 14;
-const CASING = 1.2;
+const CASING = S.casing;
 /** A mate's dots: their spacing, which is also the clear space left to each card, and their radius. */
 export const MATE_PERIOD = 8;
 const MATE_DOT = 2.5;
@@ -67,6 +68,14 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 const FRAME_CSS = `
 .frame{fill:none;stroke:var(--faint);stroke-width:1.2;stroke-dasharray:7 5}`;
 const FRAME_RADIUS = 14;
+
+/** A flow chevron: a notch cut through its run in the ground colour. Only a sheet with flow carries the rule. */
+const FLOW_CSS = `
+.flow{fill:none;stroke:var(--bg);stroke-linecap:round;stroke-linejoin:round}`;
+
+/** A run's tracing accent. Only a sheet with accents carries the rule. */
+const ACCENT_CSS = `
+.accent{fill:none;stroke-linecap:round;stroke-linejoin:round}`;
 
 /**
  * The colours a sheet draws accents in, each as a theme variable. A colour is given as it looks in
@@ -172,6 +181,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
       o.push(drawMate(mateDots(pts)));
       continue;
     }
+    if (w.accent && r.kind === "poly") o.push(...drawAccent(acc, pts, w));
     o.push(...drawWire(path(r.kind, pts), w));
     if (w.tag && r.tag) tags.push(drawLabel(g, acc, pts, shift(r.tag), w));
     for (const [end, p] of [[w.from, pts[0]], [w.to, pts[pts.length - 1]]] as const) {
@@ -197,11 +207,12 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
       tags.push(...drawTag(g, { x: p.x + c.w / 2, y }, label, tagWidth(label)));
     });
   }
-  o.push(...new Set(ports), ...tags, "</svg>");
+  const marks = drawFlow(sheet, place, shift);
+  o.push(...marks, ...new Set(ports), ...tags, "</svg>");
 
   const head = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(sheet.title)}">`,
-    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${css(acc.vars("light"), acc.vars("dark"))}${sheet.groups?.length ? FRAME_CSS : ""}</style>`,
+    `<style>${await fontFaces(new Map([...g].map(([f, chars]) => [f, [...chars].sort().join("")])))}${css(acc.vars("light"), acc.vars("dark"))}${sheet.groups?.length ? FRAME_CSS : ""}${marks.length ? FLOW_CSS : ""}${sheet.wires.some((w) => w.accent) ? ACCENT_CSS : ""}</style>`,
   ];
   return [...head, ...o].join("\n");
 }
@@ -355,6 +366,28 @@ function drawLoop(c: Card, p: Pt, [a, b]: [string, string]): string[] {
   ];
 }
 
+/** The chevrons on every run that shows its flow, each cut into its line. */
+function drawFlow(sheet: Sheet, place: Placement, shift: (p: Pt) => Pt): string[] {
+  const runs = sheet.wires.filter((w) => w.kind !== "mate").map((w) => {
+    const r = place.routes.get(w.id)!;
+    return { w, points: r.points.map(shift), tag: r.tag && shift(r.tag) };
+  });
+  const o: string[] = [];
+  for (const { w, points, tag } of runs) {
+    if (!w.flow) continue;
+    const label = w.tag && tag ? { at: nearest(points, tag), w: w.tag.w } : undefined;
+    const others = runs.filter((r) => r.w !== w).map((r) => ({ points: r.points, weight: r.w.weight }));
+    for (const m of flowMarks({ points, weight: w.weight, dir: w.flow, label }, others)) o.push(drawChevron(m, w.weight));
+  }
+  return o;
+}
+
+/** A chevron pointing east, centred on its mark and turned to its heading, spanning its line. */
+function drawChevron(m: Mark, weight: number): string {
+  const d = chevronDepth(weight), h = weight / 2 + CASING;
+  return `<path class="flow" transform="translate(${n(m.x)},${n(m.y)}) rotate(${m.angle})" d="M${n(-d / 2)},${n(-h)} L${n(d / 2)},0 L${n(-d / 2)},${n(h)}" stroke-width="${n(Math.max(1.8, weight / 3.2))}"/>`;
+}
+
 /** The extra casing class for a black or white core, which each theme outlines in its own colour. */
 function casing(code: string): string {
   return code === "BK" ? " case-bk" : code === "WH" ? " case-wh" : "";
@@ -399,7 +432,7 @@ function drawLabel(g: Glyphs, acc: Palette, pts: Pt[], at: Pt, w: Wire): string 
   const code = w.colours[0];
   const colour = code?.startsWith("#") ? code : code && code !== "GY" ? WIRE[code] : undefined;
   const paint = colour ? `class="label" style="fill:${acc.of(colour)}"` : 'class="label muted"';
-  const off = w.weight / 2 + S.labelGap;
+  const off = labelOffset(w.weight, !!w.accent);
   const attrs = Math.abs(dx) >= Math.abs(dy)
     ? `x="${n(c.x)}" y="${n(c.y - off - 1)}" text-anchor="middle"`
     : `x="${n(c.x + off + 1)}" y="${n(c.y + S.labelSize * 0.36)}"`;
@@ -432,8 +465,55 @@ export function nearest(route: Pt[], p: Pt): Pt {
   return best;
 }
 
-/** An SVG path for a route: filleted corners on a polyline, cubic segments on a spline. */
-export function path(kind: Route["kind"], pts: Pt[]): string {
+/**
+ * A run's accent: a thin line on one or both sides, parallel to it all the way, its corners
+ * filleted round the same centres as the run's so the two never pinch together.
+ */
+function drawAccent(acc: Palette, pts: Pt[], w: Wire): string[] {
+  const a = w.accent!;
+  const d = accentReach(w.weight) - S.accentW / 2;
+  const sides = a.side === "both" ? [d, -d] : a.side === "left" ? [d] : [-d];
+  return sides.map((s) => {
+    const { points, radii } = offset(pts, s);
+    return `<path class="accent" d="${path("poly", points, radii)}" style="stroke:${acc.of(a.colour)}" stroke-width="${S.accentW}"/>`;
+  });
+}
+
+/**
+ * An orthogonal route moved `d` to its left, looking from its start (negative: to its right), with
+ * each corner's fillet radius grown on the outside of the bend and shrunk on the inside.
+ */
+export function offset(route: Pt[], d: number): { points: Pt[]; radii: number[] } {
+  const pts = route.filter((p, i) => i === 0 || p.x !== route[i - 1].x || p.y !== route[i - 1].y);
+  const unit = (a: Pt, b: Pt) => {
+    const l = Math.hypot(b.x - a.x, b.y - a.y);
+    return { x: (b.x - a.x) / l, y: (b.y - a.y) / l };
+  };
+  const dirs = pts.slice(1).map((b, i) => unit(pts[i], b));
+  const left = (u: Pt) => ({ x: u.y, y: -u.x });
+  const radii: number[] = [];
+  const points = pts.map((p, i) => {
+    const before = dirs[i - 1], after = dirs[i];
+    if (!before || !after) {
+      const n = left((before ?? after)!);
+      return { x: p.x + d * n.x, y: p.y + d * n.y };
+    }
+    const r0 = Math.min(FILLET, Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y) / 2, Math.hypot(pts[i + 1].x - p.x, pts[i + 1].y - p.y) / 2);
+    const turn = before.x * after.y - before.y * after.x;
+    radii[i] = Math.max(0, r0 + d * Math.sign(turn));
+    const [n1, n2] = [left(before), left(after)];
+    // A straight-through point keeps one normal; a right-angled corner takes both.
+    const same = Math.abs(n1.x - n2.x) < 1e-9 && Math.abs(n1.y - n2.y) < 1e-9;
+    return same ? { x: p.x + d * n1.x, y: p.y + d * n1.y } : { x: p.x + d * (n1.x + n2.x), y: p.y + d * (n1.y + n2.y) };
+  });
+  return { points, radii };
+}
+
+/**
+ * An SVG path for a route: filleted corners on a polyline, cubic segments on a spline. `radii`
+ * sets a corner's fillet in place of the usual one, as a run's accent does to follow it.
+ */
+export function path(kind: Route["kind"], pts: Pt[], radii?: number[]): string {
   if (kind === "bezier") {
     const d = [`M${n(pts[0].x)},${n(pts[0].y)}`];
     for (let i = 1; i + 2 < pts.length; i += 3) {
@@ -446,7 +526,7 @@ export function path(kind: Route["kind"], pts: Pt[]): string {
     const a = pts[i - 1], b = pts[i], c = pts[i + 1];
     const l1 = Math.hypot(b.x - a.x, b.y - a.y);
     const l2 = Math.hypot(c.x - b.x, c.y - b.y);
-    const r = Math.min(FILLET, l1 / 2, l2 / 2);
+    const r = radii?.[i] ?? Math.min(FILLET, l1 / 2, l2 / 2);
     if (r < 0.5) {
       d.push(`L${n(b.x)},${n(b.y)}`);
       continue;

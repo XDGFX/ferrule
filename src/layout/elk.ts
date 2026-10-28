@@ -9,7 +9,7 @@ import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 const ELK = elkModule as unknown as typeof elkModule.default;
 import { textWidth } from "../measure.ts";
 import type { Group } from "../model.ts";
-import { STYLE, type Card, type Sheet, type Wire } from "../sheet.ts";
+import { accentReach, STYLE, type Card, type Sheet, type Wire } from "../sheet.ts";
 import type { Box, Placement, Pt, Route } from "./types.ts";
 
 export const ELK_OPTIONS: Record<string, string> = {
@@ -147,6 +147,47 @@ function pairs(sheet: Sheet): Pair[] {
   return out;
 }
 
+/** The short line between a docked tag and the port it joins. */
+export const DOCK_STUB = 24;
+
+interface Dock {
+  wire: Wire;
+  tag: Card;
+  host: Card;
+  /** The side of the host the tag sits on, which is its port's side. */
+  side: "W" | "E";
+  /** The port's height on the host. */
+  y: number;
+}
+
+/**
+ * Off-sheet tags joined straight to one port, with no pipe between, that sit beside that port as
+ * part of its card. Laid out as nodes of their own they are sources or sinks, which ELK puts at
+ * either end of their level: outside a frame their part is in, a sheet-width from it.
+ */
+function docks(sheet: Sheet, paired: Set<string>): Dock[] {
+  const cards = new Map(sheet.cards.map((c) => [c.id, c]));
+  const wires = sheet.wires.filter((w) => w.kind !== "mate");
+  const ends = new Map<string, number>();
+  for (const w of wires) for (const e of [w.from, w.to]) {
+    ends.set(e.card, (ends.get(e.card) ?? 0) + 1);
+    ends.set(`${e.card}/${e.port}`, (ends.get(`${e.card}/${e.port}`) ?? 0) + 1);
+  }
+  const out: Dock[] = [];
+  for (const w of wires) {
+    if (w.tag || w.returns || w.coil) continue;
+    for (const [mine, theirs] of [[w.from, w.to], [w.to, w.from]] as const) {
+      const tag = cards.get(mine.card)!, host = cards.get(theirs.card)!;
+      if (tag.display !== "exit" || ends.get(tag.id) !== 1) continue;
+      if (host.display === "exit" || host.kind === "cable" || paired.has(host.id)) continue;
+      if (ends.get(`${theirs.card}/${theirs.port}`) !== 1) continue;
+      const port = host.ports.find((p) => p.id === theirs.port)!;
+      out.push({ wire: w, tag, host, side: port.side, y: port.y });
+    }
+  }
+  return out;
+}
+
 /**
  * Options that wrap a long sheet into rows, aiming for `aspect` as width over height. Applied only
  * when the sheet's YAML sets `diagram.wrap`.
@@ -173,6 +214,21 @@ export function wrapOptions(aspect: number): Record<string, string> {
 export async function layoutElk(sheet: Sheet, options: Record<string, string> = {}): Promise<Placement> {
   const paired = pairs(sheet);
   const inPair = new Set(paired.flatMap((p) => [p.a.id, p.b.id]));
+  // An accent widens its run on both sides, so a sheet with any keeps its lines further apart.
+  const room = Math.ceil(2 * (accentReach(0) + STYLE.labelGap / 2));
+  const spacing: Record<string, string> = sheet.wires.some((w) => w.accent)
+    ? Object.fromEntries(["elk.spacing.edgeEdge", "elk.spacing.edgeNode", "elk.layered.spacing.edgeEdgeBetweenLayers", "elk.layered.spacing.edgeNodeBetweenLayers"].map((k) => [k, String(Number(ELK_OPTIONS[k]) + room)]))
+    : {};
+  // A docked tag's host is laid out wider by the tag and its stub, on the tag's side, and its
+  // ports on that side move out to the new edge; their wires are drawn back in afterwards.
+  const docked = docks(sheet, inPair);
+  const dockedIds = new Set(docked.flatMap((d) => [d.tag.id, d.wire.id, `${d.host.id}/${d.wire.from.card === d.host.id ? d.wire.from.port : d.wire.to.port}`]));
+  const grow = new Map<string, { W: number; E: number }>();
+  for (const d of docked) {
+    const g = grow.get(d.host.id) ?? { W: 0, E: 0 };
+    g[d.side] = Math.max(g[d.side], d.tag.w + DOCK_STUB);
+    grow.set(d.host.id, g);
+  }
   const port = (card: Card, p: Card["ports"][number], dx = 0) => ({
     id: `${card.id}/${p.id}`,
     x: p.x + dx,
@@ -207,17 +263,21 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     layoutOptions: {
       ...ELK_OPTIONS,
       ...(sheet.wrap ? wrapOptions(sheet.wrap) : {}),
+      ...spacing,
       ...(groups.length ? { "elk.hierarchyHandling": "INCLUDE_CHILDREN" } : {}),
       ...options,
     },
     children: [
-      ...sheet.cards.filter((c) => !inPair.has(c.id)).map((c) => ({
-        id: c.id,
-        width: c.w,
-        height: c.h,
-        layoutOptions: { "elk.portConstraints": "FIXED_POS" },
-        ports: c.ports.map((p) => port(c, p)),
-      })),
+      ...sheet.cards.filter((c) => !inPair.has(c.id) && !dockedIds.has(c.id)).map((c) => {
+        const g = grow.get(c.id) ?? { W: 0, E: 0 };
+        return {
+          id: c.id,
+          width: c.w + g.W + g.E,
+          height: c.h,
+          layoutOptions: { "elk.portConstraints": "FIXED_POS" },
+          ports: c.ports.filter((p) => !dockedIds.has(`${c.id}/${p.id}`)).map((p) => port(c, p, p.side === "E" ? g.W + g.E : 0)),
+        };
+      }),
       ...paired.map(({ id, a, b }) => ({
         id,
         width: a.w + MATE_GAP + b.w,
@@ -235,7 +295,7 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
         { id: `${w.id}/a`, sources: [`${w.from.card}/${w.from.port}`], targets: [`turn:${w.id}/a`] },
         { id: `${w.id}/b`, sources: [`${w.to.card}/${w.to.port}`], targets: [`turn:${w.id}/b`] },
       ]),
-      ...sheet.wires.filter((w) => !w.returns && !paired.some((p) => p.mate === w.id)).map((w) => ({
+      ...sheet.wires.filter((w) => !w.returns && !dockedIds.has(w.id) && !paired.some((p) => p.mate === w.id)).map((w) => ({
       id: w.id,
       sources: [`${w.from.card}/${w.from.port}`],
       targets: [`${w.to.card}/${w.to.port}`],
@@ -244,7 +304,7 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     ],
   };
 
-  if (groups.length) graph.children = framed(graph.children!, groups, groupOf);
+  if (groups.length) graph.children = framed(graph.children!, groups, groupOf, spacing);
 
   const out = await new ELK().layout(graph);
   // ELK places a frame's children, and any edge wholly inside it, relative to the frame.
@@ -303,6 +363,29 @@ export async function layoutElk(sheet: Sheet, options: Record<string, string> = 
     const x = turn.x + (w.tag?.w ?? TURN_GAP) / 2;
     routes.set(w.id, { kind: "poly", points: [...a, { x, y: ya }, { x, y: yb }, ...b], tag: { x, y: (ya + yb) / 2 } });
   }
+  // Each grown host moves back to where its card starts, and the wires ELK ended at its grown edge
+  // run on, along the same line, to their ports.
+  for (const [id, g] of grow) {
+    const at = cards.get(id)!;
+    cards.set(id, { x: at.x + g.W, y: at.y });
+  }
+  for (const w of sheet.wires) {
+    const r = routes.get(w.id);
+    if (!r) continue;
+    const first = r.points[0], last = r.points[r.points.length - 1];
+    const g = (card: string) => grow.get(card) ?? { W: 0, E: 0 };
+    if (w.from.port.endsWith(":E")) first.x -= g(w.from.card).E;
+    if (w.to.port.endsWith(":W")) last.x += g(w.to.card).W;
+    else last.x -= g(w.to.card).E;
+  }
+  for (const d of docked) {
+    const host = cards.get(d.host.id)!, y = host.y + d.y;
+    const x = d.side === "W" ? host.x - DOCK_STUB - d.tag.w : host.x + d.host.w + DOCK_STUB;
+    cards.set(d.tag.id, { x, y: y - d.tag.h / 2 });
+    const edge = d.side === "W" ? host.x : host.x + d.host.w;
+    const points = d.side === "W" ? [{ x: x + d.tag.w, y }, { x: edge, y }] : [{ x: edge, y }, { x, y }];
+    routes.set(d.wire.id, { kind: "poly", points });
+  }
   return { engine: "elk", width: out.width!, height: out.height!, cards, routes, ...(groups.length ? { frames } : {}) };
 }
 
@@ -313,7 +396,7 @@ const FRAME = "frame:";
  * out as a box round them and nothing else. The frame takes the place of its first member, so
  * the order parts were first named in still orders the sheet.
  */
-function framed(nodes: ElkNode[], groups: Group[], groupOf: Map<string, string>): ElkNode[] {
+function framed(nodes: ElkNode[], groups: Group[], groupOf: Map<string, string>, spacing: Record<string, string>): ElkNode[] {
   const s = STYLE;
   const frames = new Map<string, ElkNode>(groups.map((g) => {
     const top = s.framePad + (g.label ? s.frameTitleH : 0);
@@ -322,6 +405,7 @@ function framed(nodes: ElkNode[], groups: Group[], groupOf: Map<string, string>)
       id: FRAME + g.id,
       layoutOptions: {
         ...ELK_OPTIONS,
+        ...spacing,
         // elkjs throws when it orders a nested graph by model order, so a frame's inside goes without.
         "elk.layered.considerModelOrder.strategy": "NONE",
         "elk.padding": `[top=${top},left=${s.framePad},bottom=${s.framePad},right=${s.framePad}]`,

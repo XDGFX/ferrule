@@ -53,7 +53,9 @@ else is ignored, or is an error if it changes what connects to what.
 name or number, defaulting to the first; and `pipe^`, which turns the chain round. Each pipe in
 a chain is a fresh run, coloured by its `colour` or `service_rating` and weighted by its `size`.
 A pipe with `coil: true` draws its runs as a coil of six passes, for a long looped length such
-as an underfloor heating loop. A top-level `groups` map frames the parts each group lists as
+as an underfloor heating loop. A connection written as a map, `{ chain: [...], flow: forward,
+accent: "#d55e00" }`, marks which way its runs flow and traces them with a thin accent line
+beside each, leaving the hose's own colour alone. A top-level `groups` map frames the parts each group lists as
 `members`, under its `label`; a member is a part or a named instance, never a fresh one, and a
 part is in one group at most. Chains are checked against pipeviz's rules: an unknown name or
 port, or a pipe next to a pipe, is an error. ferrule is a little stricter: only a pipe may carry
@@ -136,11 +138,12 @@ still shows colour chips and boxed tags.
 | **Mates and loops** | Two connectors plugged together are joined by a chain of dots between their title bars. Two pins bridged on one connector loop off its side. |
 | **Pin colours** | A small chip before the pin's label, split for a two-colour mark. |
 | **Pipes** | A run labelled with the pipe's name, coloured by service (potable blue, hot red, waste brown, vent olive) unless it has its own colour. Line weight follows bore, so a pipe reads heavier than any cable. Parts that screw straight together are joined by a short unlabelled line. |
+| **Flow and accents** | A run with `flow` carries a small chevron cut into its line in the ground colour, on its longest clear stretch, away from corners, its label and crossings. An `accent` is a hairline in its own colour along one or both sides of a run, following its bends, for tracing a circuit without recolouring the hose. |
 | **Ports** | A port's thread and gender sit muted at the end of its row, such as `1/2" BSP · F`. |
 | **U-turns** | A reversed pipe leaves both its ends eastward and turns round past them, its label at the turn, so the parts after it lie back beside the parts before it. |
 | **Coils** | A pipe with `coil: true` runs back and forth in six passes, its label above them: in place of the turn on a reversed pipe, or let into the middle of a straight run. |
 | **Groups** | A plumbing plan's `groups` each draw a quiet dashed frame with a small title round their members' cards and nothing else, beneath the cards and pipes. Pipes cross the border to reach a member. |
-| **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
+| **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. One joined straight to a single port sits a short stub from it. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
 | **Type** | Inter, bundled and measured in-process. |
 
 ## How it fits together
