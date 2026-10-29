@@ -261,7 +261,7 @@ test("an exit is a single-height tag with every port on its centre line", () => 
   assert.deepEqual(out.ports.map((p) => p.y), [out.h / 2]);
 });
 
-test("an end takes its heaviest run, room for that run's bar and its label, and its port on its centre line", () => {
+test("an end takes its heaviest run, room for its cap and its label, and its port on its centre line", () => {
   const pipe = (id: string, bore: number) => ({ id, template: id, type: "", gauge: null, bore, length: "", accent: "#888888", notes: [], wires: [{ index: 1, label: "", code: "", colours: ["BN"] }] });
   const s = buildSheet({ ...minor, connectors: [...minor.connectors, { ...conn("GROUND", 2), label: "TO GROUND", display: "end" }], cables: [pipe("THIN", 10), pipe("FAT", 40)], links: [
     { cable: "THIN", wire: 1, from: { connector: "PUMP", pin: "1" }, to: { connector: "GROUND", pin: "1" } },
@@ -269,8 +269,8 @@ test("an end takes its heaviest run, room for that run's bar and its label, and 
   ] });
   const end = s.cards.find((c) => c.id === "GROUND")!;
   const heavy = weight(null, 40), mark = endMark(heavy);
-  assert.deepEqual(end.end, { weight: heavy, colours: ["BN"] });
-  assert.ok(end.h >= 2 * mark.half && end.h > STYLE.exitH);
+  assert.deepEqual(end.end, { weight: heavy });
+  assert.ok(end.h >= 2 * mark.half);
   assert.ok(end.w > mark.reach + STYLE.endGap);
   assert.deepEqual(end.ports.map((p) => [p.side, p.x, p.y]), [["W", 0, end.h / 2], ["W", 0, end.h / 2]]);
 });

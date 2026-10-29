@@ -42,7 +42,7 @@ export const STYLE = {
   exitH: 26,
   exitSize: 11,
   exitTip: 11,
-  /** An end: how far its bar stands out past the run's casing, and the gap before its label. */
+  /** An end: how far its cap stands out past the run's casing, and the gap before its label. */
   endOver: 4,
   endGap: 6,
   /** A run's label, as plain text above the run: its size, and its gap from the line. */
@@ -55,6 +55,8 @@ export const STYLE = {
   frameTitleSpacing: 0.6,
   /** Every core's hairline casing, each side of its line. */
   casing: 1.2,
+  /** A cap's line: where a core goes nowhere, and an end's mark across its run. */
+  capW: 1.5,
   /** A tracing accent: its line width, and its gap from the casing of the run it follows. */
   accentW: 1.5,
   accentGap: 1.6,
@@ -109,8 +111,8 @@ export interface Card {
   display: Display;
   /** A symbol before the title, on a full card only. */
   glyph?: Glyph;
-  /** On an end, the run whose end mark it draws: its weight and colours. */
-  end?: { weight: number; colours: string[] };
+  /** On an end, the weight of the heaviest run it caps, which sets the cap's height. */
+  end?: { weight: number };
 }
 
 export interface Tag {
@@ -347,15 +349,15 @@ function exitCard(c: Connector, title: string, used: Map<string, Set<Side>>): Ca
 }
 
 /**
- * An end's bar across its run, in the run's own weight: how far it reaches along the run from the
- * port, and how far it stands either side of the run's centre line.
+ * An end's cap across its run: how far it reaches along the run from the port, and how far it
+ * stands either side of the run's centre line, just clear of the run's casing.
  */
 export function endMark(weight: number): { reach: number; half: number } {
-  return { reach: weight + STYLE.casing, half: weight + STYLE.casing + STYLE.endOver };
+  return { reach: STYLE.capW, half: weight / 2 + STYLE.casing + STYLE.endOver };
 }
 
 /**
- * Where a run stops for good. Not a box: the room for the bar across the run's end and the label
+ * Where a run stops for good. Not a box: the room for the cap across the run's end and the label
  * beyond it, every port on its centre line. The card takes the heaviest run that reaches it.
  */
 function endCard(c: Connector, title: string, used: Map<string, Set<Side>>, run: Wire | undefined): Card {
@@ -365,7 +367,7 @@ function endCard(c: Connector, title: string, used: Map<string, Set<Side>>, run:
   const w = Math.ceil(mark.reach + s.endGap + textWidth(title, s.labelSize, 500));
   const card = base(c.id, "simple", title, "", c.accent, w, [], []);
   card.display = "end";
-  card.end = { weight, colours: run?.colours ?? ["GY"] };
+  card.end = { weight };
   card.h = Math.ceil(Math.max(s.exitH, 2 * mark.half));
   card.ports = ports(used, card, () => card.h / 2);
   return card;

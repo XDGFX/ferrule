@@ -144,7 +144,7 @@ still shows colour chips and boxed tags.
 | **Coils** | A pipe with `coil: true` runs back and forth in six passes, its label above them: in place of the turn on a reversed pipe, or let into the middle of a straight run. |
 | **Groups** | A plumbing plan's `groups` each draw a quiet dashed frame with a small title round their members' cards and nothing else, beneath the cards and pipes. Pipes cross the border to reach a member. |
 | **Off-sheet ends** | A plumbing template with `display: exit` draws as a tag with an arrow on its end, such as `FROM OTHER SYSTEM`. One joined straight to a single port sits a short stub from it. For looms, planned: an arrow naming the other end, such as `→ MPPT_150_45`, instead of a wire that just stops. |
-| **Dead ends** | A plumbing part with `display: end` is where a run stops for good, such as `TO GROUND`. It isn't a box: the pipe stops at a short bar across its end, in the pipe's own colour and weight, with the part's name in muted text just beyond. |
+| **Dead ends** | A plumbing part with `display: end` is where a run stops for good, such as `TO GROUND`. It isn't a box: the pipe stops at a thin muted line across its end, a little taller than the pipe, with the part's name in muted text just beyond. |
 | **Type** | Inter, bundled and measured in-process. |
 
 ## How it fits together

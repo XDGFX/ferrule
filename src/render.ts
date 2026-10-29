@@ -57,7 +57,7 @@ text{font-family:Inter,'Helvetica Neue',Arial,sans-serif;fill:var(--text)}
 .tag{fill:var(--tag-bg);stroke:var(--line);stroke-width:1}
 .port{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
 .mate{fill:var(--muted)}
-.cap{stroke:var(--muted);stroke-width:1.5;stroke-linecap:round}
+.cap{stroke:var(--muted);stroke-width:${S.capW};stroke-linecap:round}
 .pill{fill:var(--pill)}
 .pill-text{fill:var(--pill-text)}
 .exit{fill:var(--card);stroke:var(--muted);stroke-width:1;stroke-opacity:.7;stroke-linejoin:round}
@@ -294,17 +294,15 @@ function drawExit(g: Glyphs, c: Card, p: Pt): string[] {
 }
 
 /**
- * Where a run stops for good: a bar across the run's end in its own colour and weight, and the
- * label as plain muted text beyond it. It faces its port, which is on its west side unless the run
- * leaves it eastward.
+ * Where a run stops for good: a cap across the run's end, drawn as linework rather than pipe, and
+ * the label as plain muted text beyond it. It faces its port, which is on its west side unless the
+ * run leaves it eastward.
  */
 function drawEnd(g: Glyphs, c: Card, p: Pt): string[] {
-  const { weight, colours } = c.end!;
   const east = c.ports.length > 0 && c.ports.every((q) => q.side === "E");
-  const cy = p.y + c.h / 2, { reach, half } = endMark(weight);
-  const bx = east ? p.x + c.w - weight / 2 : p.x + weight / 2;
-  const len = half - CASING;
-  const o = drawWire(`M${n(bx)},${n(cy - len)} L${n(bx)},${n(cy + len)}`, { colours: colours.slice(0, 1), weight });
+  const cy = p.y + c.h / 2, { reach, half } = endMark(c.end!.weight);
+  const bx = east ? p.x + c.w - S.capW / 2 : p.x + S.capW / 2;
+  const o = [`<line class="cap" x1="${n(bx)}" y1="${n(cy - half)}" x2="${n(bx)}" y2="${n(cy + half)}"/>`];
   const lx = east ? p.x + c.w - reach - S.endGap : p.x + reach + S.endGap;
   o.push(text(g, `class="label muted" x="${n(lx)}" y="${n(cy + S.labelSize * 0.36)}"${east ? ' text-anchor="end"' : ""} font-size="${S.labelSize}"`, c.title, 500));
   return o;
@@ -423,7 +421,7 @@ function coreColour(code: string): string {
   return WIRE[code] ?? WIRE.GY;
 }
 
-function drawWire(d: string, w: Pick<Wire, "colours" | "weight">): string[] {
+function drawWire(d: string, w: Wire): string[] {
   const [c1, c2] = w.colours;
   const kase = casing(c1);
   const o = [
