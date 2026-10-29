@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { layoutElk } from "../src/layout/elk.ts";
 import { clamp, flatten, MATE_PERIOD, mateDots, nearest, render } from "../src/render.ts";
-import { buildSheet } from "../src/sheet.ts";
+import { buildSheet, endMark, STYLE } from "../src/sheet.ts";
 import { readPipeviz } from "../src/pipeviz.ts";
 import { readWireviz } from "../src/wireviz.ts";
 
@@ -137,6 +137,10 @@ components:
     label: TO OTHER SYSTEM
     display: exit
     ports: [IN]
+  ground:
+    label: TO GROUND
+    display: end
+    ports: [IN]
 pipes:
   hot:
     label: HOT PIPE
@@ -147,6 +151,7 @@ pipes:
     size: 16mm
 connections:
   - [pump:OUT, hot, adapter., plain, out]
+  - [pump:IN, plain, ground]
 `;
 
 const plumbed = async () => {
@@ -174,6 +179,26 @@ test("a card is outlined and tinted in its colour, and draws its glyph; pills an
   assert.match(s, /<rect class="pill"[^>]*\/>\n<text class="pill-text"[^>]*>ADAPTER</);
   assert.match(s, /<path class="exit"/);
   assert.doesNotMatch(s, /class="chip"/);
+});
+
+test("an end is no box: its run stops at a bar across it in the run's weight, its label muted text beyond", async () => {
+  const sheet = buildSheet(readPipeviz([plumbing], "plan"));
+  const place = await layoutElk(sheet);
+  const s = await render(sheet, place);
+  const run = sheet.wires.find((w) => w.to.card === "ground")!;
+  const ground = place.cards.get("ground")!;
+  const bars = [...s.matchAll(/<path class="core" d="M([\d.]+),([\d.]+) L\1,([\d.]+)" style="stroke:[^"]+" stroke-width="([\d.]+)"\/>/g)];
+  assert.equal(bars.length, 1);
+  const [, x, y1, y2, w] = bars[0].map(Number);
+  assert.equal(w, run.weight);
+  assert.equal(x, ground.x + run.weight / 2);
+  assert.equal(y2 - y1, 2 * (endMark(run.weight).half - STYLE.casing));
+  assert.match(s, /<text class="label muted"[^>]*>TO GROUND</);
+  assert.equal([...s.matchAll(/<path class="exit"/g)].length, 1);
+  // The bar is the run's end, so the end has no port circle, which an exit in its place would.
+  const asExit = buildSheet(readPipeviz([plumbing.replace("display: end", "display: exit")], "plan"));
+  const circles = (svg: string) => new Set(svg.match(/<circle class="port"[^>]*>/g)).size;
+  assert.equal(circles(await render(asExit, await layoutElk(asExit))) - circles(s), 1);
 });
 
 test("each theme clamps a colour's lightness so it reads on that ground", async () => {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildSheet, STYLE, titleX, weight } from "../src/sheet.ts";
+import { buildSheet, endMark, STYLE, titleX, weight } from "../src/sheet.ts";
 import type { Harness } from "../src/model.ts";
 
 const pins = (n: number) => Array.from({ length: n }, (_, i) => ({ num: String(i + 1), label: `P${i + 1}`, colours: [] }));
@@ -259,6 +259,20 @@ test("an exit is a single-height tag with every port on its centre line", () => 
   assert.equal(out.display, "exit");
   assert.equal(out.h, STYLE.exitH);
   assert.deepEqual(out.ports.map((p) => p.y), [out.h / 2]);
+});
+
+test("an end takes its heaviest run, room for that run's bar and its label, and its port on its centre line", () => {
+  const pipe = (id: string, bore: number) => ({ id, template: id, type: "", gauge: null, bore, length: "", accent: "#888888", notes: [], wires: [{ index: 1, label: "", code: "", colours: ["BN"] }] });
+  const s = buildSheet({ ...minor, connectors: [...minor.connectors, { ...conn("GROUND", 2), label: "TO GROUND", display: "end" }], cables: [pipe("THIN", 10), pipe("FAT", 40)], links: [
+    { cable: "THIN", wire: 1, from: { connector: "PUMP", pin: "1" }, to: { connector: "GROUND", pin: "1" } },
+    { cable: "FAT", wire: 1, from: { connector: "PUMP", pin: "2" }, to: { connector: "GROUND", pin: "2" } },
+  ] });
+  const end = s.cards.find((c) => c.id === "GROUND")!;
+  const heavy = weight(null, 40), mark = endMark(heavy);
+  assert.deepEqual(end.end, { weight: heavy, colours: ["BN"] });
+  assert.ok(end.h >= 2 * mark.half && end.h > STYLE.exitH);
+  assert.ok(end.w > mark.reach + STYLE.endGap);
+  assert.deepEqual(end.ports.map((p) => [p.side, p.x, p.y]), [["W", 0, end.h / 2], ["W", 0, end.h / 2]]);
 });
 
 test("a glyph moves the title along, and only a part that asks for one has it", () => {

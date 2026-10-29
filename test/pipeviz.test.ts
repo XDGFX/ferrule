@@ -148,7 +148,7 @@ test("rejects what pipeviz rejects", () => {
   assert.throws(() => read(`components:\n  x:\n    ports: [A]\nconnections:\n  - [x, x.b]\n`, []), /label/);
   assert.throws(() => read(`components:\n  x:\n    label: X\nconnections:\n  - [x, x.b]\n`, []), /ports or portcount/);
   assert.throws(() => read(`components:\n  x:\n    label: X\n    ports: [A]\n    portcount: 2\nconnections:\n  - [x, x.b]\n`, []), /portcount/);
-  assert.throws(() => read(`components:\n  x:\n    label: X\n    simple: true\n    display: chip\nconnections:\n  - [x, x.b]\n`, []), /display "chip" should be one of card, pill, exit/);
+  assert.throws(() => read(`components:\n  x:\n    label: X\n    simple: true\n    display: chip\nconnections:\n  - [x, x.b]\n`, []), /display "chip" should be one of card, pill, exit, end/);
   assert.throws(() => read(`components:\n  x:\n    label: X\n    simple: true\n    glyph: boiler\nconnections:\n  - [x, x.b]\n`, []), /glyph "boiler" should be one of valve/);
 });
 
@@ -182,17 +182,23 @@ components:
     label: TO OTHER SYSTEM
     display: exit
     ports: [OUT]
+  ground:
+    label: TO GROUND
+    display: end
+    ports: [IN]
   tank:
     label: TANK
     ports: [OUT]
 connections:
   - [tank, adapter., pump:IN]
   - [pump:OUT, out]
+  - [tank, ground]
 `, []);
   const c = (id: string) => h.connectors.find((k) => k.template === id)!;
   assert.equal(c("adapter").display, "pill");
   assert.equal(c("pump").glyph, "pump");
   assert.equal(c("out").display, "exit");
+  assert.equal(c("ground").display, "end");
   assert.equal(c("tank").display, undefined);
   assert.equal(c("tank").glyph, undefined);
 });

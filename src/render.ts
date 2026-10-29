@@ -8,7 +8,7 @@ import type { Placement, Pt, Route } from "./layout/types.ts";
 import { chevronDepth, flowMarks, type Mark } from "./flow.ts";
 import { FACES, fontFaces, type Face } from "./measure.ts";
 import type { Glyph } from "./model.ts";
-import { accentReach, labelOffset, STYLE as S, tagWidth, titleX, type Card, type Sheet, type Wire } from "./sheet.ts";
+import { accentReach, endMark, labelOffset, STYLE as S, tagWidth, titleX, type Card, type Sheet, type Wire } from "./sheet.ts";
 
 // A white core on a white card needs a darker casing than the rest to stay visible; a black one
 // on the dark ground needs a lighter one.
@@ -185,7 +185,8 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
     o.push(...drawWire(path(r.kind, pts), w));
     if (w.tag && r.tag) tags.push(drawLabel(g, acc, pts, shift(r.tag), w));
     for (const [end, p] of [[w.from, pts[0]], [w.to, pts[pts.length - 1]]] as const) {
-      if (cards.get(end.card)!.kind !== "cable") ports.push(`<circle class="port" cx="${n(p.x)}" cy="${n(p.y)}" r="3.2"/>`);
+      // An end's bar is the run's end, so it has no port of its own.
+      if (cards.get(end.card)!.kind !== "cable" && cards.get(end.card)!.display !== "end") ports.push(`<circle class="port" cx="${n(p.x)}" cy="${n(p.y)}" r="3.2"/>`);
     }
   }
   for (const c of sheet.cards) for (const loop of c.loops) o.push(...drawLoop(c, at(c.id), loop));
@@ -219,6 +220,7 @@ export async function render(sheet: Sheet, place: Placement, caption = ""): Prom
 
 function drawCard(g: Glyphs, acc: Palette, c: Card, p: Pt): string[] {
   if (c.display === "exit") return drawExit(g, c, p);
+  if (c.display === "end") return drawEnd(g, c, p);
   if (c.display === "pill" && c.kind === "simple") return drawPill(g, c, p);
   const compact = c.display === "pill";
   const o: string[] = [];
@@ -289,6 +291,23 @@ function drawExit(g: Glyphs, c: Card, p: Pt): string[] {
     `<path class="exit" d="${d}"/>`,
     text(g, `class="muted" x="${n(x + S.pad)}" y="${n(y + h / 2 + S.exitSize * 0.36)}" font-size="${S.exitSize}"`, c.title, 600),
   ];
+}
+
+/**
+ * Where a run stops for good: a bar across the run's end in its own colour and weight, and the
+ * label as plain muted text beyond it. It faces its port, which is on its west side unless the run
+ * leaves it eastward.
+ */
+function drawEnd(g: Glyphs, c: Card, p: Pt): string[] {
+  const { weight, colours } = c.end!;
+  const east = c.ports.length > 0 && c.ports.every((q) => q.side === "E");
+  const cy = p.y + c.h / 2, { reach, half } = endMark(weight);
+  const bx = east ? p.x + c.w - weight / 2 : p.x + weight / 2;
+  const len = half - CASING;
+  const o = drawWire(`M${n(bx)},${n(cy - len)} L${n(bx)},${n(cy + len)}`, { colours: colours.slice(0, 1), weight });
+  const lx = east ? p.x + c.w - reach - S.endGap : p.x + reach + S.endGap;
+  o.push(text(g, `class="label muted" x="${n(lx)}" y="${n(cy + S.labelSize * 0.36)}"${east ? ' text-anchor="end"' : ""} font-size="${S.labelSize}"`, c.title, 500));
+  return o;
 }
 
 /** A monoline P&ID-style symbol, 14 px across, centred on (cx, cy). */
@@ -404,7 +423,7 @@ function coreColour(code: string): string {
   return WIRE[code] ?? WIRE.GY;
 }
 
-function drawWire(d: string, w: Wire): string[] {
+function drawWire(d: string, w: Pick<Wire, "colours" | "weight">): string[] {
   const [c1, c2] = w.colours;
   const kase = casing(c1);
   const o = [

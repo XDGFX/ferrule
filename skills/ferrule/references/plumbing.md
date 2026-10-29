@@ -11,7 +11,7 @@ uses it. The sheet is titled by `diagram.title`, or else the file name in title 
 templates:
   fitting:
     color: "#64748b"              # the card's outline and faint tint
-    display: pill                 # card (default), pill or exit
+    display: pill                 # card (default), pill, exit or end
   pump:
     color: "#c2410c"
     glyph: pump                   # a symbol before the title; none by default
@@ -53,10 +53,14 @@ components:
 | `card` | The full card: title, subtitle, ports and description. The default. |
 | `pill` | A minor part, such as an adapter or tee: a borderless muted line, no subtitle or description. A simple pill is one line; one with ports keeps them as tight rows. |
 | `exit` | Where a run leaves the sheet, such as `FROM OTHER SYSTEM`: a tag with an arrow on its east end, every port on its centre line. Joined straight to one port, with no pipe between, it sits a short stub from that port, inside the port's frame if it has one. |
+| `end` | Where a run stops for good, such as `TO GROUND`. No box: the pipe stops at a short bar across its end, in the pipe's own colour and weight, the label in muted text just beyond. Give it one port, reached by a pipe. |
+
+Use `exit` when the run carries on in another diagram, and `end` when nothing follows it
+anywhere, such as water let out of the vehicle.
 
 `glyph` is one of `valve`, `pump`, `filter`, `heater`, `tank`, `trap`, `vent` or `fixture`: a
-small P&ID-style symbol in the template colour before a full card's title. Pills and exits draw
-none. Leave it off a template with no clear symbol.
+small P&ID-style symbol in the template colour before a full card's title. Pills, exits and ends
+draw none. Leave it off a template with no clear symbol.
 
 ## Pipes
 

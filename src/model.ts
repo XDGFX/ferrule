@@ -32,9 +32,10 @@ export interface Connector {
 
 /**
  * A full card; a compact pill for a minor part such as an adapter or tee, which carries no
- * subtitle or notes; or an arrow-ended tag where a run leaves the sheet.
+ * subtitle or notes; an arrow-ended tag where a run carries on on another sheet; or a bar-ended
+ * tag where a run stops for good, such as water let out to ground.
  */
-export const DISPLAYS = ["card", "pill", "exit"] as const;
+export const DISPLAYS = ["card", "pill", "exit", "end"] as const;
 export type Display = (typeof DISPLAYS)[number];
 
 /** The symbols a part can carry, each a small monoline P&ID shape. */

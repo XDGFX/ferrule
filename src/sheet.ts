@@ -42,6 +42,9 @@ export const STYLE = {
   exitH: 26,
   exitSize: 11,
   exitTip: 11,
+  /** An end: how far its bar stands out past the run's casing, and the gap before its label. */
+  endOver: 4,
+  endGap: 6,
   /** A run's label, as plain text above the run: its size, and its gap from the line. */
   labelSize: 10,
   labelGap: 4,
@@ -102,10 +105,12 @@ export interface Card {
   loops: [string, string][];
   notes: string[];
   ports: Port[];
-  /** A full card, a compact pill for a minor part, or an arrow-ended exit tag. */
+  /** A full card, a compact pill for a minor part, an arrow-ended exit tag, or the end of a run. */
   display: Display;
   /** A symbol before the title, on a full card only. */
   glyph?: Glyph;
+  /** On an end, the run whose end mark it draws: its weight and colours. */
+  end?: { weight: number; colours: string[] };
 }
 
 export interface Tag {
@@ -208,7 +213,8 @@ export function buildSheet(h: Harness): Sheet {
     const pins = used.get(c.id) ?? new Map<string, Set<Side>>();
     // A looped pin is in use even with no wire on it, so it isn't folded away.
     const inUse = new Set([...pins.keys(), ...c.loops.flat()]);
-    cards.push(connectorCard(c, pins, inUse, repeated));
+    const runs = wires.filter((w) => w.kind !== "mate" && (w.from.card === c.id || w.to.card === c.id));
+    cards.push(connectorCard(c, pins, inUse, repeated, runs));
   }
   for (const c of h.cables) if (!isRun(c)) cards.push(cableCard(c, used.get(c.id) ?? new Map(), repeated));
   return { title: h.title, cards, wires, ...(h.wrap ? { wrap: h.wrap } : {}), ...(h.groups ? { groups: h.groups } : {}) };
@@ -250,11 +256,12 @@ export function displayName(id: string, template: string, repeated: Set<string>)
   return repeated.has(template) ? `${template} · ${m[1]}` : template;
 }
 
-function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>, repeated: Set<string>): Card {
+function connectorCard(c: Connector, used: Map<string, Set<Side>>, inUse: Set<string>, repeated: Set<string>, runs: Wire[]): Card {
   const sub = [c.type, c.subtype].filter(Boolean).join(" · ");
   const title = c.label || displayName(c.id, c.template, repeated);
   const display = c.display ?? "card";
   if (display === "exit") return exitCard(c, title, used);
+  if (display === "end") return endCard(c, title, used, runs.reduce<Wire | undefined>((a, w) => (a && a.weight >= w.weight ? a : w), undefined));
   if (display === "pill" && c.simple) return pillCard(c, title, used);
   if (c.simple) {
     const room = titleX(c.glyph) + STYLE.pad;
@@ -335,6 +342,31 @@ function exitCard(c: Connector, title: string, used: Map<string, Set<Side>>): Ca
   const card = base(c.id, "simple", title, "", c.accent, w, [], []);
   card.display = "exit";
   card.h = s.exitH;
+  card.ports = ports(used, card, () => card.h / 2);
+  return card;
+}
+
+/**
+ * An end's bar across its run, in the run's own weight: how far it reaches along the run from the
+ * port, and how far it stands either side of the run's centre line.
+ */
+export function endMark(weight: number): { reach: number; half: number } {
+  return { reach: weight + STYLE.casing, half: weight + STYLE.casing + STYLE.endOver };
+}
+
+/**
+ * Where a run stops for good. Not a box: the room for the bar across the run's end and the label
+ * beyond it, every port on its centre line. The card takes the heaviest run that reaches it.
+ */
+function endCard(c: Connector, title: string, used: Map<string, Set<Side>>, run: Wire | undefined): Card {
+  const s = STYLE;
+  const weight = run?.weight ?? 3;
+  const mark = endMark(weight);
+  const w = Math.ceil(mark.reach + s.endGap + textWidth(title, s.labelSize, 500));
+  const card = base(c.id, "simple", title, "", c.accent, w, [], []);
+  card.display = "end";
+  card.end = { weight, colours: run?.colours ?? ["GY"] };
+  card.h = Math.ceil(Math.max(s.exitH, 2 * mark.half));
   card.ports = ports(used, card, () => card.h / 2);
   return card;
 }
